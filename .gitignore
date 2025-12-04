@@ -1,0 +1,33 @@
+# Ignore Maven build output
+target/
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Ignore Eclipse project files
+.project
+.classpath
+.settings/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore log files
+*.log
+
+# Ignore compiled class files
+*.class
+
+# Ignore package files
+*.jar
+*.war
+*.ear
+
+# Ignore local configuration overrides
+*-local.properties
+local.properties

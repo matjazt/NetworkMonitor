@@ -1,0 +1,14 @@
+### Test REST API Endpoints
+
+# Get all monitored networks
+GET http://localhost:8080/network-monitor/api/networks
+
+###
+
+# Get online devices for a specific network (replace MaliGrdi with your network name)
+GET http://localhost:8080/network-monitor/api/networks/MaliGrdi/devices
+
+###
+
+# Test with non-existent network (should return 404)
+GET http://localhost:8080/network-monitor/api/networks/NonExistent/devices

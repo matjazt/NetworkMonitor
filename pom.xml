@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Project coordinates - uniquely identify this project -->
+    <groupId>com.matjazt</groupId>
+    <artifactId>network-monitor</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>war</packaging> <!-- WAR packaging for deployment to TomEE -->
+
+    <name>Network Monitor</name>
+    <description>MQTT-based network device monitoring with REST API</description>
+
+    <properties>
+        <!-- Source encoding and Java version -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        
+        <!-- Dependency versions - centralized for easier updates -->
+        <jakarta.ee.version>10.0.0</jakarta.ee.version>
+        <eclipse.paho.version>1.2.5</eclipse.paho.version>
+        <postgresql.version>42.7.1</postgresql.version>
+    </properties>
+
+    <dependencies>
+        <!-- Jakarta EE API - provides all enterprise features (REST, JPA, CDI, etc.) -->
+        <!-- Scope 'provided' means TomEE already has this, don't package it in WAR -->
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>${jakarta.ee.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Eclipse Paho - MQTT client library for subscribing to topics -->
+        <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <version>${eclipse.paho.version}</version>
+        </dependency>
+
+        <!-- PostgreSQL JDBC driver - needed at runtime to connect to database -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!-- The final WAR file name (without .war extension) -->
+        <finalName>network-monitor</finalName>
+        
+        <plugins>
+            <!-- Maven compiler plugin - compiles Java sources -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+
+            <!-- Maven WAR plugin - packages the application -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <!-- Don't fail build if web.xml is missing - Jakarta EE 10 doesn't require it -->
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
