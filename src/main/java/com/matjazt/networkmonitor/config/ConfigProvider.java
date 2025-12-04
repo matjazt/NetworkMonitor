@@ -68,18 +68,7 @@ public class ConfigProvider {
     @ConfigProperty(name = "mqtt.ssl.verify.hostname", defaultValue = "true")
     private Boolean mqttSslVerifyHostname;
 
-    @Inject
-    @ConfigProperty(name = "db.url")
-    private String dbUrl;
-
-    @Inject
-    @ConfigProperty(name = "db.username")
-    private String dbUsername;
-
-    @Inject
-    @ConfigProperty(name = "db.password")
-    private String dbPassword;
-
+  
     @Inject
     @ConfigProperty(name = "app.log.level", defaultValue = "INFO")
     private String logLevel;
@@ -138,17 +127,6 @@ public class ConfigProvider {
         return mqttSslVerifyHostname;
     }
 
-    public String getDbUrl() {
-        return dbUrl;
-    }
-
-    public String getDbUsername() {
-        return dbUsername;
-    }
-
-    public String getDbPassword() {
-        return dbPassword;
-    }
 
     public String getLogLevel() {
         return logLevel;

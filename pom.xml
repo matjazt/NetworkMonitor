@@ -22,6 +22,7 @@
         
         <!-- Dependency versions - centralized for easier updates -->
         <jakarta.ee.version>10.0.0</jakarta.ee.version>
+        <microprofile.config.version>3.0</microprofile.config.version>
         <eclipse.paho.version>1.2.5</eclipse.paho.version>
         <postgresql.version>42.7.1</postgresql.version>
     </properties>
@@ -33,6 +34,15 @@
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
             <version>${jakarta.ee.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- MicroProfile Config - for externalized configuration management -->
+        <!-- Scope 'provided' means TomEE already includes this -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <version>${microprofile.config.version}</version>
             <scope>provided</scope>
         </dependency>
 
