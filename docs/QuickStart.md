@@ -94,7 +94,7 @@ mosquitto_pub -h your-broker -p 8883 `
 Check database:
 
 ```powershell
-psql -U postgres -d network_monitor -c "SELECT * FROM networks;"
+psql -U postgres -d network_monitor -c "SELECT * FROM network;"
 psql -U postgres -d network_monitor -c "SELECT * FROM device_status_history;"
 ```
 

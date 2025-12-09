@@ -19,7 +19,7 @@ import jakarta.persistence.Table;
  * The network name is extracted from the MQTT topic.
  */
 @Entity // Marks this class as a database entity
-@Table(name = "networks") // Maps to "networks" table in database
+@Table(name = "network") // Maps to "network" table in database
 public class Network {
 
     @Id // Primary key

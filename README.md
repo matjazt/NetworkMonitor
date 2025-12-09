@@ -171,7 +171,7 @@ Returns currently online devices for the specified network.
 
 ### Database Schema
 
-**networks**: Stores monitored networks
+**network**: Stores monitored networks
 
 - `id`: Primary key
 - `name`: Network name (from MQTT topic)
@@ -180,7 +180,7 @@ Returns currently online devices for the specified network.
 **device_status_history**: Historical record of device state changes
 
 - `id`: Primary key
-- `network_id`: Foreign key to networks
+- `network_id`: Foreign key to network table
 - `mac_address`: Device MAC address (permanent identifier)
 - `ip_address`: Device IP at time of event
 - `online`: Boolean (true = came online, false = went offline)
