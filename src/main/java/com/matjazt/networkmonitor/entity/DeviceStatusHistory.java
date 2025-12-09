@@ -1,7 +1,17 @@
 package com.matjazt.networkmonitor.entity;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 /**
  * JPA Entity representing a device status change event.
@@ -12,13 +22,12 @@ import java.time.LocalDateTime;
  * not on every MQTT message.
  */
 @Entity
-@Table(name = "device_status_history", 
-       indexes = {
-           // Index for fast lookups by network
-           @Index(name = "idx_network_id", columnList = "network_id"),
-           // Index for finding current status of a device
-           @Index(name = "idx_mac_timestamp", columnList = "mac_address, timestamp")
-       })
+@Table(name = "device_status_history", indexes = {
+        // Index for fast lookups by network
+        @Index(name = "idx_network_id", columnList = "network_id"),
+        // Index for finding current status of a device
+        @Index(name = "idx_mac_timestamp", columnList = "mac_address, timestamp")
+})
 public class DeviceStatusHistory {
 
     @Id
@@ -32,7 +41,7 @@ public class DeviceStatusHistory {
      * @ManyToOne tells JPA this is a relationship field.
      * @JoinColumn specifies the foreign key column name.
      */
-    @ManyToOne(fetch = FetchType.LAZY)  // LAZY = don't load network unless accessed
+    @ManyToOne(fetch = FetchType.LAZY) // LAZY = don't load network unless accessed
     @JoinColumn(name = "network_id", nullable = false)
     private Network network;
 
@@ -46,7 +55,7 @@ public class DeviceStatusHistory {
      * Device IP address at the time of this status change.
      * Can change for the same device (DHCP), so we store it historically.
      */
-    @Column(name = "ip_address", nullable = false, length = 45)  // 45 chars for IPv6
+    @Column(name = "ip_address", nullable = false, length = 45) // 45 chars for IPv6
     private String ipAddress;
 
     /**
@@ -66,8 +75,8 @@ public class DeviceStatusHistory {
     public DeviceStatusHistory() {
     }
 
-    public DeviceStatusHistory(Network network, String macAddress, String ipAddress, 
-                               Boolean online, LocalDateTime timestamp) {
+    public DeviceStatusHistory(Network network, String macAddress, String ipAddress,
+            Boolean online, LocalDateTime timestamp) {
         this.network = network;
         this.macAddress = macAddress;
         this.ipAddress = ipAddress;

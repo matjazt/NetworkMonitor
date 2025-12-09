@@ -1,11 +1,13 @@
 package com.matjazt.networkmonitor.config;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import java.util.List;
 import java.util.Optional;
+
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 /**
  * Central configuration provider using MicroProfile Config.
@@ -18,12 +20,12 @@ import java.util.Optional;
  * 
  * This is similar to .NET's IConfiguration but follows Java EE conventions.
  */
-@ApplicationScoped  // Single instance for entire application lifecycle
+@ApplicationScoped // Single instance for entire application lifecycle
 public class ConfigProvider {
 
     // @Inject with @ConfigProperty auto-loads values from config sources
     // Similar to .NET's [FromConfiguration] attribute
-    
+
     @Inject
     @ConfigProperty(name = "mqtt.broker.url")
     private String mqttBrokerUrl;
@@ -42,7 +44,7 @@ public class ConfigProvider {
 
     @Inject
     @ConfigProperty(name = "mqtt.topics")
-    private String mqttTopics;  // Comma-separated string
+    private String mqttTopics; // Comma-separated string
 
     @Inject
     @ConfigProperty(name = "mqtt.connection.timeout", defaultValue = "30")
@@ -68,7 +70,6 @@ public class ConfigProvider {
     @ConfigProperty(name = "mqtt.ssl.verify.hostname", defaultValue = "true")
     private Boolean mqttSslVerifyHostname;
 
-  
     @Inject
     @ConfigProperty(name = "app.log.level", defaultValue = "INFO")
     private String logLevel;
@@ -78,7 +79,7 @@ public class ConfigProvider {
     private Config config;
 
     // Getters - standard Java bean pattern
-    
+
     public String getMqttBrokerUrl() {
         return mqttBrokerUrl;
     }
@@ -100,7 +101,7 @@ public class ConfigProvider {
      * Each topic typically represents a different network to monitor.
      */
     public List<String> getMqttTopics() {
-        return List.of(mqttTopics.split(",\\s*"));  // Split by comma, trim whitespace
+        return List.of(mqttTopics.split(",\\s*")); // Split by comma, trim whitespace
     }
 
     public Integer getMqttConnectionTimeout() {
@@ -126,7 +127,6 @@ public class ConfigProvider {
     public Boolean getMqttSslVerifyHostname() {
         return mqttSslVerifyHostname;
     }
-
 
     public String getLogLevel() {
         return logLevel;

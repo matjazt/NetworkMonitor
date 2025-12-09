@@ -15,6 +15,7 @@ psql -U postgres -d network_monitor -f database/schema.sql
 ```
 
 Verify tables were created:
+
 ```powershell
 psql -U postgres -d network_monitor -c "\dt"
 ```
@@ -100,11 +101,13 @@ psql -U postgres -d network_monitor -c "SELECT * FROM device_status_history;"
 ## Step 7: Query via REST API
 
 List networks:
+
 ```powershell
 Invoke-RestMethod http://localhost:8080/network-monitor/api/networks
 ```
 
 Get online devices:
+
 ```powershell
 Invoke-RestMethod http://localhost:8080/network-monitor/api/networks/TestNet/devices
 ```

@@ -1,13 +1,15 @@
 package com.matjazt.networkmonitor.repository;
 
+import java.util.List;
+import java.util.Optional;
+
 import com.matjazt.networkmonitor.entity.Network;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Repository (Data Access Layer) for Network entities.
@@ -26,7 +28,8 @@ public class NetworkRepository {
      * Similar to DbContext in Entity Framework.
      * 
      * @PersistenceContext injects the EntityManager automatically.
-     * Container manages its lifecycle (creation, transaction binding, cleanup).
+     *                     Container manages its lifecycle (creation, transaction
+     *                     binding, cleanup).
      */
     @PersistenceContext(unitName = "NetworkMonitorPU")
     private EntityManager em;
@@ -42,9 +45,9 @@ public class NetworkRepository {
             // JPQL (JPA Query Language) - similar to SQL but uses entity names
             // :name is a named parameter to prevent SQL injection
             Network network = em.createQuery(
-                "SELECT n FROM Network n WHERE n.name = :name", Network.class)
-                .setParameter("name", name)
-                .getSingleResult();
+                    "SELECT n FROM Network n WHERE n.name = :name", Network.class)
+                    .setParameter("name", name)
+                    .getSingleResult();
             return Optional.of(network);
         } catch (NoResultException e) {
             return Optional.empty();
@@ -67,7 +70,7 @@ public class NetworkRepository {
      * @param network Network to save
      * @return The saved/updated network (with ID if new)
      */
-    @Transactional  // Requires transaction for write operations
+    @Transactional // Requires transaction for write operations
     public Network save(Network network) {
         if (network.getId() == null) {
             // New entity - persist adds it to the database

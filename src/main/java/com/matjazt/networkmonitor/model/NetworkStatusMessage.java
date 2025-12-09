@@ -28,8 +28,8 @@ public class NetworkStatusMessage {
      */
     private List<DeviceInfo> devices;
 
-    // No-arg constructor required for JSON-B deserialization
     public NetworkStatusMessage() {
+        // No-arg constructor required for JSON-B deserialization
     }
 
     // Getters and setters
@@ -66,6 +66,7 @@ public class NetworkStatusMessage {
         private String mac;
 
         public DeviceInfo() {
+            // No-arg constructor required for JSON-B deserialization
         }
 
         public String getIp() {

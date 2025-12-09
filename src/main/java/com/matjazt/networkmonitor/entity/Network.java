@@ -1,7 +1,13 @@
 package com.matjazt.networkmonitor.entity;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 /**
  * JPA Entity representing a monitored network.
@@ -12,12 +18,12 @@ import java.time.LocalDateTime;
  * This entity stores basic information about each monitored network.
  * The network name is extracted from the MQTT topic.
  */
-@Entity  // Marks this class as a database entity
-@Table(name = "networks")  // Maps to "networks" table in database
+@Entity // Marks this class as a database entity
+@Table(name = "networks") // Maps to "networks" table in database
 public class Network {
 
-    @Id  // Primary key
-    @GeneratedValue(strategy = GenerationType.IDENTITY)  // Auto-increment by database
+    @Id // Primary key
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment by database
     private Long id;
 
     /**
@@ -30,6 +36,7 @@ public class Network {
 
     /**
      * When this network was first seen.
+     * 
      * @Column with columnDefinition allows us to use PostgreSQL's TIMESTAMP type.
      */
     @Column(name = "first_seen", nullable = false, columnDefinition = "TIMESTAMP")
@@ -53,7 +60,7 @@ public class Network {
 
     // Getters and setters - standard Java bean pattern
     // In Java, private fields are accessed via public methods (encapsulation)
-    
+
     public Long getId() {
         return id;
     }
