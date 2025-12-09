@@ -1,5 +1,8 @@
 package com.matjazt.networkmonitor.api;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
 
@@ -14,6 +17,15 @@ import jakarta.ws.rs.core.Application;
  */
 @ApplicationPath("/")
 public class RestApplication extends Application {
-    // No methods needed - the class itself activates JAX-RS
-    // TomEE automatically discovers all @Path annotated classes
+ /**
+     * Returns the set of REST resource classes to register.
+     * Without this, TomEE won't discover your @Path annotated classes.
+     */
+    @Override
+    public Set<Class<?>> getClasses() {
+        Set<Class<?>> classes = new HashSet<>();
+        // Register all REST endpoints
+           classes.add(NetworkResource.class);
+        return classes;
+    }
 }

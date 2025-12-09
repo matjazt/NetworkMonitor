@@ -29,10 +29,10 @@ Install these extensions for Java development:
 
 1. **Extension Pack for Java** (vscjava.vscode-java-pack)
    - Includes language support, debugging, testing, Maven integration
-   
+
 2. **Tomcat for Java** (adashen.vscode-tomcat) or **Community Server Connectors** (redhat.vscode-community-server-connector)
    - For deploying and managing TomEE server from VS Code
-   
+
 3. **PostgreSQL** (ckolkman.vscode-postgres)
    - Database client for VS Code
 
@@ -93,11 +93,13 @@ This creates `target/network-monitor.war` - a Web Application Archive ready for 
 ### Deploy to TomEE
 
 1. Copy the WAR file to TomEE's webapps directory:
+
    ```powershell
    cp target/network-monitor.war <TOMEE_HOME>/webapps/
    ```
 
 2. Start TomEE:
+
    ```powershell
    <TOMEE_HOME>/bin/catalina.bat run
    ```
@@ -113,13 +115,14 @@ This creates `target/network-monitor.war` - a Web Application Archive ready for 
 
 ### Get All Networks
 
-```
+```text
 GET /api/networks
 ```
 
 Returns list of all monitored networks.
 
 **Response:**
+
 ```json
 [
   {
@@ -133,13 +136,14 @@ Returns list of all monitored networks.
 
 ### Get Online Devices for Network
 
-```
+```text
 GET /api/networks/{networkName}/devices
 ```
 
 Returns currently online devices for the specified network.
 
 **Response:**
+
 ```json
 [
   {
@@ -168,11 +172,13 @@ Returns currently online devices for the specified network.
 ### Database Schema
 
 **networks**: Stores monitored networks
+
 - `id`: Primary key
 - `name`: Network name (from MQTT topic)
 - `first_seen`, `last_seen`: Tracking timestamps
 
 **device_status_history**: Historical record of device state changes
+
 - `id`: Primary key
 - `network_id`: Foreign key to networks
 - `mac_address`: Device MAC address (permanent identifier)
@@ -189,6 +195,7 @@ See `ProjectStructure.md` for detailed explanation of folders and files.
 ### Viewing Logs
 
 TomEE logs are in `<TOMEE_HOME>/logs/catalina.out`. Watch for:
+
 - Application startup messages
 - MQTT connection status
 - SQL queries (if SQL logging enabled)
@@ -226,6 +233,7 @@ For faster development, consider using TomEE Maven plugin for hot reload.
 ## Next Steps
 
 Potential enhancements for learning:
+
 - Add authentication/authorization to REST API (Jakarta Security)
 - Implement WebSocket for real-time device status updates
 - Add metrics and health checks (MicroProfile Metrics/Health)
@@ -235,7 +243,7 @@ Potential enhancements for learning:
 
 ## Learning Resources
 
-- **Jakarta EE Tutorial**: https://eclipse-ee4j.github.io/jakartaee-tutorial/
-- **TomEE Documentation**: https://tomee.apache.org/documentation.html
-- **Maven Guide**: https://maven.apache.org/guides/
-- **JPA/Hibernate**: https://hibernate.org/orm/documentation/
+- **Jakarta EE Tutorial**: <https://eclipse-ee4j.github.io/jakartaee-tutorial/>
+- **TomEE Documentation**: <https://tomee.apache.org/documentation.html>
+- **Maven Guide**: <https://maven.apache.org/guides/>
+- **JPA/Hibernate**: <https://hibernate.org/orm/documentation/>

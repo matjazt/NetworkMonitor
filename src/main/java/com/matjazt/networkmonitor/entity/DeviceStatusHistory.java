@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
            // Index for fast lookups by network
            @Index(name = "idx_network_id", columnList = "network_id"),
            // Index for finding current status of a device
-           @Index(name = "idx_mac_timestamp", columnList = "mac_address, timestamp DESC")
+           @Index(name = "idx_mac_timestamp", columnList = "mac_address, timestamp")
        })
 public class DeviceStatusHistory {
 
