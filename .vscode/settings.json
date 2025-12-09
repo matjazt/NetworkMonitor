@@ -1,0 +1,14 @@
+{
+    // Auto-save when focus is lost
+    "files.autoSave": "onFocusChange",
+    // Format Java files on save
+    "editor.formatOnSave": true,
+    // Use Eclipse formatter for Java (comes with Extension Pack for Java)
+    "[java]": {
+        "editor.defaultFormatter": "redhat.java",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "always"
+        }
+    }
+}

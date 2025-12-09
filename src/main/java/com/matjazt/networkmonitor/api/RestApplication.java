@@ -10,14 +10,14 @@ import jakarta.ws.rs.core.Application;
  * JAX-RS Application configuration.
  * 
  * This class activates JAX-RS and sets the base path for all REST endpoints.
- * With @ApplicationPath("/"), all resources will be available under their
- * @Path annotations (e.g., /api/networks).
+ * With @ApplicationPath("/"), all resources will be available under their @Path
+ * annotations (e.g., /api/networks).
  * 
  * Similar to app.MapControllers() in .NET, this registers the REST API.
  */
 @ApplicationPath("/")
 public class RestApplication extends Application {
- /**
+    /**
      * Returns the set of REST resource classes to register.
      * Without this, TomEE won't discover your @Path annotated classes.
      */
@@ -25,7 +25,7 @@ public class RestApplication extends Application {
     public Set<Class<?>> getClasses() {
         Set<Class<?>> classes = new HashSet<>();
         // Register all REST endpoints
-           classes.add(NetworkResource.class);
+        classes.add(NetworkResource.class);
         return classes;
     }
 }

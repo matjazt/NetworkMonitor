@@ -2,7 +2,6 @@
 target/
 
 # Ignore IDE-specific files
-.vscode/
 .idea/
 *.iml
 *.iws
