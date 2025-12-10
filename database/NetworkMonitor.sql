@@ -30,3 +30,13 @@ ORDER BY
     offline_count DESC,
     n.name,
     d.mac_address;
+
+select
+    *
+from
+    device;
+
+select
+    *
+from
+    network;

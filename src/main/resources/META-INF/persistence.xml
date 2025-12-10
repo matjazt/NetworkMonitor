@@ -8,55 +8,47 @@
   Must be located in META-INF/ directory to be discovered by the container.
 -->
 <persistence xmlns="https://jakarta.ee/xml/ns/persistence"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence 
-                                 https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
-             version="3.0">
-
-    <!-- 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+  version="3.0">
+  <!-- 
       Persistence Unit: a named configuration for a set of entities.
       The name "NetworkMonitorPU" is referenced in @PersistenceContext annotations.
-    -->
-    <persistence-unit name="NetworkMonitorPU" transaction-type="JTA">
-        
-        <!-- 
+  -->
+  <persistence-unit name="NetworkMonitorPU" transaction-type="JTA">
+    <!-- 
           Data source (JNDI name) for database connection.
           This references a DataSource configured in TomEE's resources.xml or tomee.xml.
           JNDI (Java Naming and Directory Interface) is how Java EE applications
           look up resources like database connections.
-        -->
-        <jta-data-source>java:comp/env/jdbc/NetworkMonitorDB</jta-data-source>
-        
-        <!-- 
+    -->
+    <jta-data-source>java:comp/env/jdbc/NetworkMonitorDB</jta-data-source>
+    <!-- 
           List all entity classes.
           JPA needs to know which classes map to database tables.
-        -->
-        <class>com.matjazt.networkmonitor.entity.Network</class>
-        <class>com.matjazt.networkmonitor.entity.DeviceStatusHistory</class>
-        
-        <properties>
-            <!-- 
+    -->
+    <class>com.matjazt.networkmonitor.entity.Network</class>
+    <class>com.matjazt.networkmonitor.entity.DeviceStatusHistory</class>
+    <class>com.matjazt.networkmonitor.entity.Device</class>
+    <properties>
+      <!-- 
               Hibernate (JPA implementation) properties.
               TomEE uses Apache OpenJPA by default, but these properties are standard.
-            -->
-            
-            <!-- 
+      -->
+      <!-- 
               Schema generation:
               - none: no automatic schema generation (production)
               - create: drop and create schema on startup (development)
               - drop-and-create: same as create
               - create-or-extend-tables: create missing tables, keep existing data
-              
-              For this learning project, we'll create schema manually to understand it.
-            -->
-            <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
-            
-            <!-- 
+      -->
+      <property name="jakarta.persistence.schema-generation.database.action"
+        value="create" />
+      <!-- 
               SQL logging - useful for learning and debugging.
               Shows the actual SQL queries JPA generates.
-            -->
-            <property name="openjpa.Log" value="SQL=TRACE"/>
-            
-        </properties>
-    </persistence-unit>
+      -->
+      <property name="openjpa.Log" value="SQL=TRACE" />
+    </properties>
+  </persistence-unit>
 </persistence>

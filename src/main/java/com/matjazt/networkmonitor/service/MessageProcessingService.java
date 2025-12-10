@@ -2,16 +2,18 @@ package com.matjazt.networkmonitor.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.matjazt.networkmonitor.entity.Device;
 import com.matjazt.networkmonitor.entity.DeviceStatusHistory;
 import com.matjazt.networkmonitor.entity.Network;
 import com.matjazt.networkmonitor.model.NetworkStatusMessage;
+import com.matjazt.networkmonitor.repository.DeviceRepository;
 import com.matjazt.networkmonitor.repository.DeviceStatusRepository;
 import com.matjazt.networkmonitor.repository.NetworkRepository;
 
@@ -41,6 +43,9 @@ public class MessageProcessingService {
 
     @Inject
     private NetworkRepository networkRepository;
+
+    @Inject
+    private DeviceRepository deviceRepository;
 
     @Inject
     private DeviceStatusRepository deviceStatusRepository;
@@ -76,14 +81,123 @@ public class MessageProcessingService {
             LocalDateTime messageTimestamp = LocalDateTime.parse(
                     message.getTimestamp(), TIMESTAMP_FORMATTER);
 
+            // load all devices from the device repository for this network
+            var knownDevices = deviceRepository.findAllForNetwork(network.getId());
+
+            // load all previously online devices for this network
+            var previouslyOnlineDevices = deviceStatusRepository.findCurrentlyOnline(network);
+
+            List<Long> processedDevices = new ArrayList<>();
+
             // Process each device in the message (all are online)
             for (NetworkStatusMessage.DeviceInfo device : message.getDevices()) {
-                processDeviceOnline(network, device, messageTimestamp);
+
+                // Determine if we need to record a state change
+                boolean shouldRecord = false;
+
+                // possible scenarios:
+                // 1. device is known and was online -> no change
+                // 2. device is known and was offline -> record online, log change if alwaysOn
+                // is true
+                // 3. device is unknown -> record online, add to device repository, log new
+                // device
+
+                var mac = device.getMac();
+                var ip = device.getIp();
+
+                // find the combination of mac and ip in the known devices list; keep in mind
+                // that ip can be null
+                var knownDeviceOpt = knownDevices.stream().filter(
+                        d -> d.getMacAddress().equals(mac) && (d.getIpAddress() == null || d.getIpAddress().equals(ip)))
+                        .findFirst();
+
+                if (knownDeviceOpt.isEmpty()) {
+                    // new device, add to repository
+                    var newDevice = new Device();
+                    newDevice.setNetwork(network);
+                    newDevice.setMacAddress(mac);
+                    newDevice.setIpAddress(ip);
+                    newDevice.setAllowed(false); // default to not allowed
+                    newDevice.setAlwaysOn(false); // default to not always on
+                    newDevice.setOnline(true); // currently online
+                    newDevice.setFirstSeen(messageTimestamp);
+                    newDevice.setLastSeen(messageTimestamp);
+                    deviceRepository.save(newDevice);
+
+                    LOGGER.info(
+                            "new network device detected on network " + networkName + ": " + mac + " (" + ip + ")");
+
+                    // also add to device history
+                    shouldRecord = true;
+                } else {
+                    // known device
+                    var knownDevice = knownDeviceOpt.get();
+                    processedDevices.add(knownDevice.getId());
+
+                    // in all cases, update device's current online status and last seen
+                    knownDevice.setOnline(true);
+                    knownDevice.setLastSeen(messageTimestamp);
+                    deviceRepository.save(knownDevice);
+
+                    // check last known status - search in previouslyOnlineDevices
+                    var lastOnlineStatus = previouslyOnlineDevices.stream()
+                            .filter(d -> d.getMacAddress().equals(mac))
+                            .findFirst();
+
+                    if (lastOnlineStatus.isPresent()) {
+                        // device was already online, no change, don't record
+                        LOGGER.info("Device is still online: " + mac + " (" + ip + ") on " + network.getName());
+                    } else {
+                        // The device was offline, now online
+                        shouldRecord = true;
+                        if (knownDevice.getAllowed() == false) {
+                            LOGGER.info("Device " + mac + " (" + ip + ") is not allowed on network "
+                                    + network.getName() + " but is online!");
+                        } else {
+                            LOGGER.info(String
+                                    .format("Device came online: " + mac + " (" + ip + ") on " + network.getName()));
+                        }
+                    }
+                }
+
+                if (shouldRecord) {
+                    DeviceStatusHistory status = new DeviceStatusHistory(
+                            network, mac, ip, true, messageTimestamp);
+                    deviceStatusRepository.save(status);
+                }
+
             }
 
-            // Check for devices that went offline
-            // (were online before but not in current message)
-            processDevicesOffline(network, currentlyOnlineMacs, messageTimestamp);
+            // now process known devices that were not in the current message
+            for (var knownDevice : knownDevices) {
+                if (processedDevices.contains(knownDevice.getId())) {
+                    continue; // already processed
+                }
+
+                var mac = knownDevice.getMacAddress();
+                var ip = knownDevice.getIpAddress();
+
+                // in all cases, update device's current online status and last seen
+                knownDevice.setOnline(false);
+                deviceRepository.save(knownDevice);
+
+                // check if the device was previously online
+                var lastOnlineStatus = previouslyOnlineDevices.stream()
+                        .filter(d -> d.getMacAddress().equals(mac))
+                        .findFirst();
+
+                if (lastOnlineStatus.isPresent()) {
+                    // device went offline
+                    LOGGER.info("Device went offline: " + mac + " (" + ip + ") on " + network.getName());
+
+                    // Record offline status with last known IP
+                    var offlineStatus = new DeviceStatusHistory(
+                            network, mac,
+                            ip,
+                            false, messageTimestamp);
+                    deviceStatusRepository.save(offlineStatus);
+                }
+            }
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error processing MQTT message from topic: " + topic, e);
@@ -92,14 +206,15 @@ public class MessageProcessingService {
 
     /**
      * Extract network name from MQTT topic.
-     * Takes the last part after the last '/'.
+     * Takes the last part after the last '/', falls back to entire topic name if no
+     * slash found.
      */
     private String extractNetworkName(String topic) {
+
         int lastSlash = topic.lastIndexOf('/');
-        if (lastSlash >= 0 && lastSlash < topic.length() - 1) {
-            return topic.substring(lastSlash + 1);
-        }
-        return topic; // Fallback if no slash found
+        return (lastSlash >= 0 && lastSlash < topic.length() - 1)
+                ? topic.substring(lastSlash + 1)
+                : topic;
     }
 
     /**
@@ -127,65 +242,4 @@ public class MessageProcessingService {
                 });
     }
 
-    /**
-     * Process a device that is currently online.
-     * Only creates a record if the device was previously offline or never seen.
-     */
-    private void processDeviceOnline(Network network, NetworkStatusMessage.DeviceInfo device,
-            LocalDateTime timestamp) {
-        String mac = device.getMac();
-        String ip = device.getIp();
-
-        // Check the device's last known status
-        Optional<DeviceStatusHistory> lastStatus = deviceStatusRepository.findLatestStatus(network, mac);
-
-        // Determine if we need to record a state change
-        boolean shouldRecord = false;
-
-        if (lastStatus.isEmpty()) {
-            // First time seeing this device
-            shouldRecord = true;
-            LOGGER.fine(() -> String.format("New device: %s (%s) on %s",
-                    mac, ip, network.getName()));
-        } else if (!lastStatus.get().getOnline()) {
-            // Device was offline, now online
-            shouldRecord = true;
-            LOGGER.info(String.format("Device came online: %s (%s) on %s",
-                    mac, ip, network.getName()));
-        }
-        // else: device was already online, no change, don't record
-
-        if (shouldRecord) {
-            DeviceStatusHistory status = new DeviceStatusHistory(
-                    network, mac, ip, true, timestamp);
-            deviceStatusRepository.save(status);
-        }
-    }
-
-    /**
-     * Check for devices that went offline.
-     * 
-     * This finds devices that have an "online" status in the database
-     * but are not in the current message's device list.
-     */
-    private void processDevicesOffline(Network network, Set<String> currentlyOnlineMacs,
-            LocalDateTime timestamp) {
-        // Get all devices that were online
-        List<DeviceStatusHistory> previouslyOnline = deviceStatusRepository.findCurrentlyOnline(network);
-
-        for (DeviceStatusHistory prevStatus : previouslyOnline) {
-            String mac = prevStatus.getMacAddress();
-
-            // If device is not in current message, it went offline
-            if (!currentlyOnlineMacs.contains(mac)) {
-                LOGGER.info(String.format("Device went offline: %s (%s) on %s",
-                        mac, prevStatus.getIpAddress(), network.getName()));
-
-                // Record offline status with last known IP
-                DeviceStatusHistory offlineStatus = new DeviceStatusHistory(
-                        network, mac, prevStatus.getIpAddress(), false, timestamp);
-                deviceStatusRepository.save(offlineStatus);
-            }
-        }
-    }
 }

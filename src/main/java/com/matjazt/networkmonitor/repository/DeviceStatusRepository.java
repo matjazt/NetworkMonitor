@@ -1,7 +1,6 @@
 package com.matjazt.networkmonitor.repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import com.matjazt.networkmonitor.entity.DeviceStatusHistory;
 import com.matjazt.networkmonitor.entity.Network;
@@ -19,31 +18,6 @@ public class DeviceStatusRepository {
 
     @PersistenceContext(unitName = "NetworkMonitorPU")
     private EntityManager em;
-
-    /**
-     * Find the most recent status record for a device in a network.
-     * Used to determine current state before deciding if a change occurred.
-     * 
-     * @param network    The network
-     * @param macAddress Device MAC address
-     * @return Optional containing the latest status record if exists
-     */
-    public Optional<DeviceStatusHistory> findLatestStatus(Network network, String macAddress) {
-        try {
-            DeviceStatusHistory status = em.createQuery(
-                    "SELECT d FROM DeviceStatusHistory d " +
-                            "WHERE d.network = :network AND d.macAddress = :mac " +
-                            "ORDER BY d.timestamp DESC",
-                    DeviceStatusHistory.class)
-                    .setParameter("network", network)
-                    .setParameter("mac", macAddress)
-                    .setMaxResults(1) // Only need the most recent
-                    .getSingleResult();
-            return Optional.of(status);
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
 
     /**
      * Get all currently online devices for a network.
