@@ -1,7 +1,7 @@
 package com.matjazt.networkmonitor.service;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -37,9 +37,6 @@ import jakarta.transaction.Transactional;
 public class MessageProcessingService {
 
     private static final Logger LOGGER = Logger.getLogger(MessageProcessingService.class.getName());
-
-    // DateTimeFormatter for parsing timestamps from MQTT messages
-    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Inject
     private NetworkRepository networkRepository;
@@ -80,10 +77,7 @@ public class MessageProcessingService {
                 currentlyOnlineMacs.add(device.getMac());
             }
 
-            // Parse message timestamp
-            LocalDateTime messageTimestamp = LocalDateTime.parse(
-                    message.getTimestamp(), TIMESTAMP_FORMATTER);
-
+            var messageTimestamp = LocalDateTime.ofInstant(message.getTimestamp(), ZoneOffset.UTC);
             // load all devices from the device repository for this network
             var knownDevices = deviceRepository.findAllForNetwork(network.getId());
 
@@ -125,13 +119,12 @@ public class MessageProcessingService {
                     newDevice.setOnline(true); // currently online
                     newDevice.setFirstSeen(messageTimestamp);
                     newDevice.setLastSeen(messageTimestamp);
-                    newDevice.setActiveAlarmTime(LocalDateTime.now()); // because we're going to alert about it
+                    newDevice.setActiveAlarmTime(LocalDateTime.now(ZoneOffset.UTC)); // because we're going to alert
+                                                                                     // about it
                     deviceRepository.save(newDevice);
 
-                    alerterService.sendAlert("New device detected on network", network, newDevice);
-
-                    LOGGER.info("TESTIRAM new network device detected on network " + networkName + ": " + mac + " ("
-                            + ip + ")");
+                    alerterService.sendAlert("Unauthorized device detected on network for the first time.", network,
+                            newDevice);
 
                     // also add to device history
                     shouldRecord = true;
@@ -139,6 +132,13 @@ public class MessageProcessingService {
                     // known device
                     var knownDevice = knownDeviceOpt.get();
                     processedDevices.add(knownDevice.getId());
+
+                    // see if alert needs to be sent for unauthorized device
+                    if (knownDevice.getAllowed() == false && knownDevice.getActiveAlarmTime() == null) {
+                        // device is not allowed and no alert has been sent yet
+                        alerterService.sendAlert("Unauthorized device detected on network.", network, knownDevice);
+                        knownDevice.setActiveAlarmTime(LocalDateTime.now(ZoneOffset.UTC));
+                    }
 
                     // in all cases, update device's current online status and last seen
                     knownDevice.setOnline(true);

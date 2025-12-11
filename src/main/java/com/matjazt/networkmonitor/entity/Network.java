@@ -1,6 +1,7 @@
 package com.matjazt.networkmonitor.entity;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -66,8 +67,8 @@ public class Network {
 
     public Network(String name) {
         this.name = name;
-        this.firstSeen = LocalDateTime.now();
-        this.lastSeen = LocalDateTime.now();
+        this.firstSeen = LocalDateTime.now(ZoneOffset.UTC);
+        this.lastSeen = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     // Getters and setters - standard Java bean pattern
@@ -109,7 +110,7 @@ public class Network {
      * Updates the last seen timestamp to now.
      */
     public void updateLastSeen() {
-        this.lastSeen = LocalDateTime.now();
+        this.lastSeen = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     public Integer getAlertingDelay() {

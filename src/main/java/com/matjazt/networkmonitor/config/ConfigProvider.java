@@ -74,6 +74,48 @@ public class ConfigProvider {
     @ConfigProperty(name = "app.log.level", defaultValue = "INFO")
     private String logLevel;
 
+    // === Email/SMTP Settings ===
+
+    @Inject
+    @ConfigProperty(name = "smtp.host")
+    private String smtpHost;
+
+    @Inject
+    @ConfigProperty(name = "smtp.port", defaultValue = "587")
+    private Integer smtpPort;
+
+    @Inject
+    @ConfigProperty(name = "smtp.username")
+    private Optional<String> smtpUsername;
+
+    @Inject
+    @ConfigProperty(name = "smtp.password")
+    private Optional<String> smtpPassword;
+
+    @Inject
+    @ConfigProperty(name = "smtp.from.address")
+    private String smtpFromAddress;
+
+    @Inject
+    @ConfigProperty(name = "smtp.from.name", defaultValue = "Network Monitor")
+    private String smtpFromName;
+
+    @Inject
+    @ConfigProperty(name = "smtp.starttls.enable", defaultValue = "true")
+    private Boolean smtpStartTlsEnable;
+
+    @Inject
+    @ConfigProperty(name = "smtp.auth.enable", defaultValue = "true")
+    private Boolean smtpAuthEnable;
+
+    @Inject
+    @ConfigProperty(name = "smtp.timeout", defaultValue = "10000")
+    private Integer smtpTimeout;
+
+    @Inject
+    @ConfigProperty(name = "smtp.connection.timeout", defaultValue = "10000")
+    private Integer smtpConnectionTimeout;
+
     // Inject the Config object for dynamic lookups
     @Inject
     private Config config;
@@ -130,5 +172,45 @@ public class ConfigProvider {
 
     public String getLogLevel() {
         return logLevel;
+    }
+
+    public String getSmtpHost() {
+        return smtpHost;
+    }
+
+    public Integer getSmtpPort() {
+        return smtpPort;
+    }
+
+    public Optional<String> getSmtpUsername() {
+        return smtpUsername;
+    }
+
+    public Optional<String> getSmtpPassword() {
+        return smtpPassword;
+    }
+
+    public String getSmtpFromAddress() {
+        return smtpFromAddress;
+    }
+
+    public String getSmtpFromName() {
+        return smtpFromName;
+    }
+
+    public Boolean getSmtpStartTlsEnable() {
+        return smtpStartTlsEnable;
+    }
+
+    public Boolean getSmtpAuthEnable() {
+        return smtpAuthEnable;
+    }
+
+    public Integer getSmtpTimeout() {
+        return smtpTimeout;
+    }
+
+    public Integer getSmtpConnectionTimeout() {
+        return smtpConnectionTimeout;
     }
 }

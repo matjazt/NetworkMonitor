@@ -1,5 +1,6 @@
 package com.matjazt.networkmonitor.model;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -21,7 +22,7 @@ public class NetworkStatusMessage {
     /**
      * Timestamp from the message (format: "2025-12-03 10:18:56").
      */
-    private String timestamp;
+    private Instant timestamp;
 
     /**
      * List of currently online devices.
@@ -42,11 +43,11 @@ public class NetworkStatusMessage {
         this.hostname = hostname;
     }
 
-    public String getTimestamp() {
+    public Instant getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
     }
 

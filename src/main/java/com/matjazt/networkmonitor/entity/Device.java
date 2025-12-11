@@ -1,6 +1,7 @@
 package com.matjazt.networkmonitor.entity;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -100,8 +101,8 @@ public class Device {
         this.macAddress = macAddress;
         this.ipAddress = ipAddress;
         this.online = online;
-        this.firstSeen = LocalDateTime.now();
-        this.lastSeen = LocalDateTime.now();
+        this.firstSeen = LocalDateTime.now(ZoneOffset.UTC);
+        this.lastSeen = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     // Getters and setters
@@ -187,7 +188,7 @@ public class Device {
     }
 
     public void updateLastSeen() {
-        this.lastSeen = LocalDateTime.now();
+        this.lastSeen = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     public LocalDateTime getActiveAlarmTime() {

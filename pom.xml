@@ -67,6 +67,13 @@
             <version>2.0.0</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- Jakarta Mail - for sending email alerts -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>2.0.1</version>
+        </dependency>
     </dependencies>
 
     <build>

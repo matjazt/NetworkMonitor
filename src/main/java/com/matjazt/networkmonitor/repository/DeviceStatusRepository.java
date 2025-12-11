@@ -42,6 +42,21 @@ public class DeviceStatusRepository {
                 .getResultList();
     }
 
+    public DeviceStatusHistory findLatestByMacAddress(Network network, String macAddress) {
+        List<DeviceStatusHistory> results = em.createQuery(
+                "SELECT d FROM DeviceStatusHistory d " +
+                        "WHERE d.network = :network " +
+                        "AND d.macAddress = :macAddress " +
+                        "ORDER BY d.id DESC",
+                DeviceStatusHistory.class)
+                .setParameter("network", network)
+                .setParameter("macAddress", macAddress)
+                .setMaxResults(1)
+                .getResultList();
+
+        return results.isEmpty() ? null : results.get(0);
+    }
+
     /**
      * Save a new status history record.
      * 
