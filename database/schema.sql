@@ -1,54 +1,61 @@
--- Network Monitor Database Schema
--- PostgreSQL DDL for creating tables and indexes
--- Run this with: psql -U postgres -d network_monitor -f schema.sql
--- Drop tables if they exist (for clean reinstall)
-DROP TABLE IF EXISTS device_status_history CASCADE;
+-- public.device definition
 
-DROP TABLE IF EXISTS network CASCADE;
+-- Drop table
 
--- Network table: stores information about monitored networks
+-- DROP TABLE device;
+
+CREATE TABLE device (
+	id bigserial NOT NULL,
+	always_on bool NOT NULL,
+	first_seen timestamp NOT NULL,
+	ip_address varchar(45) NULL,
+	last_seen timestamp NOT NULL,
+	mac_address varchar(17) NOT NULL,
+	online bool NOT NULL,
+	network_id int8 NOT NULL,
+	allowed bool NULL,
+	active_alarm_time timestamp NULL,
+	CONSTRAINT device_pkey PRIMARY KEY (id),
+	CONSTRAINT u_device_mac_address UNIQUE (mac_address)
+);
+CREATE INDEX i_device_network ON public.device USING btree (network_id);
+CREATE INDEX idx_device_mac ON public.device USING btree (mac_address);
+
+
+-- public.network definition
+
+-- Drop table
+
+-- DROP TABLE network;
+
 CREATE TABLE network (
-    id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE,
-    first_seen TIMESTAMP NOT NULL,
-    last_seen TIMESTAMP NOT NULL
+	id bigserial NOT NULL,
+	"name" varchar(100) NOT NULL,
+	first_seen timestamp NOT NULL,
+	last_seen timestamp NOT NULL,
+	alerting_delay int4 DEFAULT 300 NULL,
+	CONSTRAINT network_name_key UNIQUE (name),
+	CONSTRAINT network_pkey PRIMARY KEY (id)
 );
+CREATE INDEX idx_network_name ON public.network USING btree (name);
 
--- Add index for faster lookups by name
-CREATE INDEX idx_network_name ON network (name);
 
--- Device status history: historical record of device state changes
--- Each row represents when a device went online or offline
+-- public.device_status_history definition
+
+-- Drop table
+
+-- DROP TABLE device_status_history;
+
 CREATE TABLE device_status_history (
-    id BIGSERIAL PRIMARY KEY,
-    network_id BIGINT NOT NULL,
-    mac_address VARCHAR(17) NOT NULL,
-    ip_address VARCHAR(45) NOT NULL,
-    online BOOLEAN NOT NULL,
-    timestamp TIMESTAMP NOT NULL,
-    -- Foreign key to network table
-    CONSTRAINT fk_network FOREIGN KEY (network_id) REFERENCES network (id) ON DELETE CASCADE
+	id bigserial NOT NULL,
+	network_id int8 NOT NULL,
+	mac_address varchar(17) NOT NULL,
+	ip_address varchar(45) NOT NULL,
+	online bool NOT NULL,
+	"timestamp" timestamp NOT NULL,
+	CONSTRAINT device_status_history_pkey PRIMARY KEY (id),
+	CONSTRAINT fk_network FOREIGN KEY (network_id) REFERENCES network(id) ON DELETE CASCADE
 );
-
--- Index for finding all devices in a network
-CREATE INDEX idx_network_id ON device_status_history (network_id);
-
--- Index for finding current status of a specific device
--- DESC on timestamp for efficient "latest status" queries
-CREATE INDEX idx_mac_timestamp ON device_status_history (mac_address, timestamp DESC);
-
--- Composite index for the most common query pattern
-CREATE INDEX idx_network_mac_timestamp ON device_status_history (network_id, mac_address, timestamp DESC);
-
--- Comments for documentation
-COMMENT ON TABLE network IS 'Stores monitored networks extracted from MQTT topics';
-
-COMMENT ON TABLE device_status_history IS 'Historical record of device online/offline state changes';
-
-COMMENT ON COLUMN device_status_history.mac_address IS 'Device MAC address - permanent identifier';
-
-COMMENT ON COLUMN device_status_history.ip_address IS 'Device IP at time of status change';
-
-COMMENT ON COLUMN device_status_history.online IS 'true = device came online, false = went offline';
-
-COMMENT ON COLUMN device_status_history.timestamp IS 'When the status change occurred (from MQTT message)';
+CREATE INDEX idx_mac_timestamp ON public.device_status_history USING btree (mac_address, "timestamp" DESC);
+CREATE INDEX idx_network_id ON public.device_status_history USING btree (network_id);
+CREATE INDEX idx_network_mac_timestamp ON public.device_status_history USING btree (network_id, mac_address, "timestamp" DESC);

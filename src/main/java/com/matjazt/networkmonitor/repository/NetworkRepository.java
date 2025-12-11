@@ -60,7 +60,7 @@ public class NetworkRepository {
      * @return List of all networks ordered by name
      */
     public List<Network> findAll() {
-        return em.createQuery("SELECT n FROM Network n ORDER BY n.name", Network.class)
+        return em.createQuery("SELECT n FROM Network n ORDER BY n.id", Network.class)
                 .getResultList();
     }
 

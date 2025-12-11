@@ -40,3 +40,6 @@ select
     *
 from
     network;
+
+alter TABLE network
+drop column alertingdelay;

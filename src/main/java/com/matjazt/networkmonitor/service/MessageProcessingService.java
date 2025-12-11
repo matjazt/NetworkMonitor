@@ -50,6 +50,9 @@ public class MessageProcessingService {
     @Inject
     private DeviceStatusRepository deviceStatusRepository;
 
+    @Inject
+    private AlerterService alerterService;
+
     /**
      * Process an incoming MQTT message.
      * 
@@ -122,10 +125,13 @@ public class MessageProcessingService {
                     newDevice.setOnline(true); // currently online
                     newDevice.setFirstSeen(messageTimestamp);
                     newDevice.setLastSeen(messageTimestamp);
+                    newDevice.setActiveAlarmTime(LocalDateTime.now()); // because we're going to alert about it
                     deviceRepository.save(newDevice);
 
-                    LOGGER.info(
-                            "new network device detected on network " + networkName + ": " + mac + " (" + ip + ")");
+                    alerterService.sendAlert("New device detected on network", network, newDevice);
+
+                    LOGGER.info("TESTIRAM new network device detected on network " + networkName + ": " + mac + " ("
+                            + ip + ")");
 
                     // also add to device history
                     shouldRecord = true;

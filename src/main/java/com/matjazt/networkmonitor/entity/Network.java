@@ -48,6 +48,18 @@ public class Network {
     @Column(name = "last_seen", nullable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime lastSeen;
 
+    @Column(name = "alerting_delay", nullable = false, columnDefinition = "INTEGER DEFAULT 300")
+    private Integer alertingDelay = 300; // in seconds, default 5 minutes
+
+    @Column(name = "email_address", nullable = true, length = 1000)
+    private String emailAddress;
+
+    /**
+     * If there's an active alarm for this device, when it was triggered.
+     */
+    @Column(name = "active_alarm_time", nullable = true, columnDefinition = "TIMESTAMP")
+    private LocalDateTime activeAlarmTime;
+
     // JPA requires a no-argument constructor
     public Network() {
     }
@@ -98,5 +110,29 @@ public class Network {
      */
     public void updateLastSeen() {
         this.lastSeen = LocalDateTime.now();
+    }
+
+    public Integer getAlertingDelay() {
+        return alertingDelay;
+    }
+
+    public void setAlertingDelay(Integer alertingDelay) {
+        this.alertingDelay = alertingDelay;
+    }
+
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
+
+    public LocalDateTime getActiveAlarmTime() {
+        return activeAlarmTime;
+    }
+
+    public void setActiveAlarmTime(LocalDateTime activeAlarmTime) {
+        this.activeAlarmTime = activeAlarmTime;
     }
 }

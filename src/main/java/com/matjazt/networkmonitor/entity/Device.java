@@ -38,6 +38,12 @@ public class Device {
     private Network network;
 
     /**
+     * Human-readable device name.
+     */
+    @Column(name = "name", length = 200)
+    private String name;
+
+    /**
      * Unique identifier for the device (MAC address).
      */
     @Column(name = "mac_address", nullable = false, unique = true, length = 17)
@@ -79,6 +85,12 @@ public class Device {
     @Column(name = "last_seen", nullable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime lastSeen;
 
+    /**
+     * If there's an active alarm for this device, when it was triggered.
+     */
+    @Column(name = "active_alarm_time", nullable = true, columnDefinition = "TIMESTAMP")
+    private LocalDateTime activeAlarmTime;
+
     // JPA requires no-arg constructor
     public Device() {
     }
@@ -108,6 +120,14 @@ public class Device {
 
     public void setNetwork(Network network) {
         this.network = network;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getMacAddress() {
@@ -169,4 +189,13 @@ public class Device {
     public void updateLastSeen() {
         this.lastSeen = LocalDateTime.now();
     }
+
+    public LocalDateTime getActiveAlarmTime() {
+        return activeAlarmTime;
+    }
+
+    public void setActiveAlarmTime(LocalDateTime activeAlarmTime) {
+        this.activeAlarmTime = activeAlarmTime;
+    }
+
 }
