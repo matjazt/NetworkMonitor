@@ -3,7 +3,6 @@ package com.matjazt.networkmonitor.config;
 import java.util.List;
 import java.util.Optional;
 
-import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -117,8 +116,8 @@ public class ConfigProvider {
     private Integer smtpConnectionTimeout;
 
     // Inject the Config object for dynamic lookups
-    @Inject
-    private Config config;
+    // @Inject
+    // private Config config;
 
     // Getters - standard Java bean pattern
 
