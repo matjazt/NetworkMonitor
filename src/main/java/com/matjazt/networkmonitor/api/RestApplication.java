@@ -7,6 +7,7 @@ import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.info.Info;
 import org.eclipse.microprofile.openapi.annotations.servers.Server;
 
+import jakarta.security.enterprise.authentication.mechanism.http.BasicAuthenticationMechanismDefinition;
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
 
@@ -26,6 +27,7 @@ import jakarta.ws.rs.core.Application;
 @OpenAPIDefinition(info = @Info(title = "Network Monitor API", version = "1.0.0", description = "MQTT-based network device monitoring with REST API"), servers = {
         @Server(url = "/network-monitor")
 })
+@BasicAuthenticationMechanismDefinition(realmName = "Network Monitor")
 public class RestApplication extends Application {
     /**
      * Returns the set of REST resource classes to register.

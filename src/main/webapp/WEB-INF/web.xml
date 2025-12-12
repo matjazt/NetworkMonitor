@@ -15,7 +15,7 @@
             <http-method>DELETE</http-method>
         </web-resource-collection>
         <auth-constraint>
-            <!-- Empty auth-constraint means "any authenticated user" -->
+            <role-name>Authenticated</role-name>
         </auth-constraint>
     </security-constraint>
 
@@ -35,4 +35,8 @@
         <auth-method>BASIC</auth-method>
         <realm-name>Network Monitor</realm-name>
     </login-config>
+
+    <security-role>
+        <role-name>Authenticated</role-name>
+    </security-role>
 </web-app>

@@ -1,11 +1,12 @@
 package com.matjazt.networkmonitor.security;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.matjazt.networkmonitor.entity.Account;
 import com.matjazt.networkmonitor.entity.Network;
 
-import java.security.Principal;
-import java.util.Collections;
-import java.util.List;
+import jakarta.security.enterprise.CallerPrincipal;
 
 /**
  * Custom Principal that holds the authenticated Account and their accessible
@@ -13,12 +14,13 @@ import java.util.List;
  * This enriched principal provides direct access to user context without
  * additional queries.
  */
-public class AccountPrincipal implements Principal {
+public class AccountPrincipal extends CallerPrincipal {
 
     private final Account account;
     private final List<Network> networks;
 
     public AccountPrincipal(Account account, List<Network> networks) {
+        super(account.getUsername());
         this.account = account;
         this.networks = networks != null ? networks : Collections.emptyList();
     }
