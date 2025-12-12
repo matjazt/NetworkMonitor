@@ -35,7 +35,7 @@ public class AccountManagementDAO {
      * @return List of networks the account has access to
      * @throws AuthenticationException if username/password combination is invalid
      */
-    public List<Network> getNetworksForAccount(String username, String password)
+    public List<Network> getNetworksForAccount_DONT_USE_THIS_ONE(String username, String password)
             throws AuthenticationException {
 
         logger.debug("Attempting authentication for username: {}", username);
