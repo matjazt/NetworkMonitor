@@ -1,3 +1,10 @@
+ne vsega hkrati poganjat!!!!
+
+drop table device_status_history ;
+drop table device ;
+drop table network ;
+
+
 SELECT
     *
 FROM
