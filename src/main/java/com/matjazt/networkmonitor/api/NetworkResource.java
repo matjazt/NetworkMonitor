@@ -5,6 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+
 import com.matjazt.networkmonitor.entity.DeviceStatusHistory;
 import com.matjazt.networkmonitor.entity.Network;
 import com.matjazt.networkmonitor.repository.DeviceStatusRepository;
@@ -31,6 +38,7 @@ import jakarta.ws.rs.core.Response;
 @Path("/api/networks")
 @Produces(MediaType.APPLICATION_JSON) // All responses are JSON by default
 @Consumes(MediaType.APPLICATION_JSON) // All requests accept JSON by default
+@Tag(name = "Networks", description = "Network and device monitoring operations")
 public class NetworkResource {
 
     private static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
@@ -50,6 +58,10 @@ public class NetworkResource {
      *      Return type is automatically serialized to JSON by JSON-B.
      */
     @GET
+    @Operation(summary = "Get all networks", description = "Retrieves a list of all monitored networks with their details")
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "Successfully retrieved networks", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
     public Response getNetworks() {
         List<Network> networks = networkRepository.findAll();
 
@@ -72,7 +84,13 @@ public class NetworkResource {
      */
     @GET
     @Path("/{networkName}/devices")
-    public Response getOnlineDevices(@PathParam("networkName") String networkName) {
+    @Operation(summary = "Get online devices for a network", description = "Retrieves all currently online devices for the specified network")
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "Successfully retrieved online devices", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(responseCode = "404", description = "Network not found", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    public Response getOnlineDevices(
+            @Parameter(description = "Name of the network", required = true, example = "MaliGrdi") @PathParam("networkName") String networkName) {
         // Find the network
         Optional<Network> networkOpt = networkRepository.findByName(networkName);
 
