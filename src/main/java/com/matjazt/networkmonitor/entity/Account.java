@@ -29,7 +29,7 @@ public class Account {
     @Column(nullable = false, unique = true, length = 100)
     private String username;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "account_type_id", nullable = false)
     private AccountType accountType;
 

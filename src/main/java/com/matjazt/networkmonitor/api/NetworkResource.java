@@ -16,6 +16,7 @@ import com.matjazt.networkmonitor.entity.DeviceStatusHistory;
 import com.matjazt.networkmonitor.entity.Network;
 import com.matjazt.networkmonitor.repository.DeviceStatusRepository;
 import com.matjazt.networkmonitor.repository.NetworkRepository;
+import com.matjazt.networkmonitor.security.AccountPrincipal;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -49,6 +50,9 @@ public class NetworkResource {
     @Inject
     private DeviceStatusRepository deviceStatusRepository;
 
+    @jakarta.ws.rs.core.Context
+    private jakarta.ws.rs.core.SecurityContext securityContext;
+
     /**
      * GET /api/networks
      * 
@@ -71,7 +75,14 @@ public class NetworkResource {
         List<Map<String, Object>> networkDtos = networks.stream()
                 .map(this::toNetworkDto)
                 .toList();
-        return Response.ok(networkDtos).build();
+
+        // Get account information from SecurityContext
+        Map<String, Object> response = Map.of(
+                "accountId", getAccountId(),
+                "accountFullName", getAccountFullName(),
+                "networks", networkDtos);
+
+        return Response.ok(response).build();
     }
 
     /**
@@ -110,7 +121,15 @@ public class NetworkResource {
         List<Map<String, Object>> deviceDtos = onlineDevices.stream()
                 .map(this::toDeviceDto)
                 .toList();
-        return Response.ok(deviceDtos).build();
+
+        // Get account information from SecurityContext
+        Map<String, Object> response = Map.of(
+                "accountId", getAccountId(),
+                "accountFullName", getAccountFullName(),
+                "networkName", networkName,
+                "devices", deviceDtos);
+
+        return Response.ok(response).build();
     }
 
     /**
@@ -136,5 +155,27 @@ public class NetworkResource {
                 "ipAddress", device.getIpAddress(),
                 "online", device.getOnline(),
                 "timestamp", device.getTimestamp().format(ISO_FORMATTER));
+    }
+
+    /**
+     * Extract account ID from the SecurityContext.
+     */
+    private Long getAccountId() {
+        if (securityContext != null && securityContext.getUserPrincipal() instanceof AccountPrincipal) {
+            AccountPrincipal principal = (AccountPrincipal) securityContext.getUserPrincipal();
+            return principal.getAccountId();
+        }
+        return null;
+    }
+
+    /**
+     * Extract account full name from the SecurityContext.
+     */
+    private String getAccountFullName() {
+        if (securityContext != null && securityContext.getUserPrincipal() instanceof AccountPrincipal) {
+            AccountPrincipal principal = (AccountPrincipal) securityContext.getUserPrincipal();
+            return principal.getFullName();
+        }
+        return "Anonymous";
     }
 }

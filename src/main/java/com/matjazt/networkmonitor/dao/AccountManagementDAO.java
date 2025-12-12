@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.matjazt.networkmonitor.entity.Account;
+import com.matjazt.networkmonitor.entity.AccountNetwork;
 import com.matjazt.networkmonitor.entity.Network;
 
 import jakarta.ejb.Stateless;
@@ -61,7 +62,7 @@ public class AccountManagementDAO {
     /**
      * Find an account by username.
      */
-    private Account findAccountByUsername(String username) {
+    public Account findAccountByUsername(String username) {
         try {
             TypedQuery<Account> query = em.createQuery(
                     "SELECT a FROM Account a WHERE a.username = :username", Account.class);
@@ -78,7 +79,7 @@ public class AccountManagementDAO {
      * TODO: Implement proper password hashing (BCrypt, Argon2, etc.)
      * For now, this is a placeholder that compares plain text.
      */
-    private boolean verifyPassword(String plainPassword, String storedHash) {
+    public boolean verifyPassword(String plainPassword, String storedHash) {
         // TEMPORARY: Plain text comparison
         // TODO: Replace with proper password verification:
         // return BCrypt.checkpw(plainPassword, storedHash);
@@ -88,7 +89,7 @@ public class AccountManagementDAO {
     /**
      * Update the account's last_seen timestamp.
      */
-    private void updateLastSeen(Account account) {
+    public void updateLastSeen(Account account) {
         account.setLastSeen(LocalDateTime.now());
         em.merge(account);
     }
@@ -96,15 +97,16 @@ public class AccountManagementDAO {
     /**
      * Retrieve all networks that the account has access to.
      */
-    private List<Network> getNetworksForAccount(Account account) {
-        TypedQuery<Network> query = em.createQuery(
-                "SELECT n FROM Network n " +
-                        "JOIN AccountNetwork un ON un.network.id = n.id " +
-                        "WHERE un.account.id = :accountId " +
-                        "ORDER BY n.name",
-                Network.class);
+    public List<Network> getNetworksForAccount(Account account) {
+        TypedQuery<AccountNetwork> query = em.createQuery(
+                "SELECT an.network FROM AccountNetwork an " +
+                        " WHERE an.account.id = :accountId " +
+                        " ORDER BY an.network.name ",
+                AccountNetwork.class);
         query.setParameter("accountId", account.getId());
-        return query.getResultList();
+        return query.getResultList().stream()
+                .map(AccountNetwork::getNetwork)
+                .toList();
     }
 
     /**
