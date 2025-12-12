@@ -3,6 +3,10 @@ package com.matjazt.networkmonitor.api;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
+import org.eclipse.microprofile.openapi.annotations.info.Info;
+import org.eclipse.microprofile.openapi.annotations.servers.Server;
+
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
 
@@ -16,6 +20,12 @@ import jakarta.ws.rs.core.Application;
  * Similar to app.MapControllers() in .NET, this registers the REST API.
  */
 @ApplicationPath("/")
+/**
+ * OpenAPI configuration and metadata for the Network Monitor API.
+ */
+@OpenAPIDefinition(info = @Info(title = "Network Monitor API", version = "1.0.0", description = "MQTT-based network device monitoring with REST API"), servers = {
+        @Server(url = "/network-monitor")
+})
 public class RestApplication extends Application {
     /**
      * Returns the set of REST resource classes to register.
