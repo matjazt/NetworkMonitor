@@ -6,8 +6,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.matjazt.networkmonitor.entity.Device;
 import com.matjazt.networkmonitor.entity.DeviceStatusHistory;
@@ -36,7 +37,7 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class MessageProcessingService {
 
-    private static final Logger LOGGER = Logger.getLogger(MessageProcessingService.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessageProcessingService.class);
 
     @Inject
     private NetworkRepository networkRepository;
@@ -206,7 +207,7 @@ public class MessageProcessingService {
             }
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error processing MQTT message from topic: " + topic, e);
+            LOGGER.error("Error processing MQTT message from topic: {}", topic, e);
         }
     }
 

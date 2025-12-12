@@ -10,9 +10,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Custom MicroProfile ConfigSource that reads from an external properties file
@@ -27,7 +28,7 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
  */
 public class ExternalConfigSource implements ConfigSource {
 
-    private static final Logger LOGGER = Logger.getLogger(ExternalConfigSource.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExternalConfigSource.class);
 
     private static final String CONFIG_FILE_NAME = "network-monitor.properties";
     private static final int ORDINAL = 500; // Higher than default sources
@@ -47,7 +48,7 @@ public class ExternalConfigSource implements ConfigSource {
             loadProperties();
         } else {
             configFilePath = null;
-            LOGGER.warning("catalina.base not set, external config will not be loaded");
+            LOGGER.warn("catalina.base not set, external config will not be loaded");
         }
     }
 
@@ -55,7 +56,7 @@ public class ExternalConfigSource implements ConfigSource {
         Path path = Paths.get(configFilePath);
 
         if (!Files.exists(path)) {
-            LOGGER.info("External config file not found: " + configFilePath + " (this is optional)");
+            LOGGER.info("External config file not found: {} (this is optional)", configFilePath);
             return;
         }
 
@@ -68,10 +69,10 @@ public class ExternalConfigSource implements ConfigSource {
                 properties.put(key, props.getProperty(key));
             }
 
-            LOGGER.info("Loaded " + properties.size() + " properties from: " + configFilePath);
+            LOGGER.info("Loaded {} properties from: {}", properties.size(), configFilePath);
 
         } catch (IOException e) {
-            LOGGER.warning("Failed to load external config from " + configFilePath + ": " + e.getMessage());
+            LOGGER.warn("Failed to load external config from {}: {}", configFilePath, e.getMessage());
         }
     }
 

@@ -3,8 +3,6 @@ package com.matjazt.networkmonitor.service;
 import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -17,6 +15,8 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.matjazt.networkmonitor.config.ConfigProvider;
 
@@ -39,7 +39,7 @@ import jakarta.inject.Inject;
 @Startup
 public class MqttService {
 
-    private static final Logger LOGGER = Logger.getLogger(MqttService.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(MqttService.class);
 
     @Inject
     private ConfigProvider config;
@@ -85,14 +85,14 @@ public class MqttService {
             mqttClient.setCallback(new MqttCallback() {
                 @Override
                 public void connectionLost(Throwable cause) {
-                    LOGGER.log(Level.WARNING, "MQTT connection lost", cause);
+                    LOGGER.warn("MQTT connection lost", cause);
                 }
 
                 @Override
                 public void messageArrived(String topic, MqttMessage message) {
                     // Delegate message processing to dedicated service
                     String payload = new String(message.getPayload());
-                    LOGGER.fine(() -> String.format("Received message on topic %s: %s", topic, payload));
+                    LOGGER.debug("Received message on topic {}: {}", topic, payload);
                     messageProcessor.processMessage(topic, payload);
                 }
 
@@ -103,7 +103,7 @@ public class MqttService {
             });
 
             // Connect to broker
-            LOGGER.info("Connecting to MQTT broker: " + config.getMqttBrokerUrl());
+            LOGGER.info("Connecting to MQTT broker: {}", config.getMqttBrokerUrl());
             mqttClient.connect(options);
             LOGGER.info("Connected to MQTT broker");
 
@@ -111,7 +111,7 @@ public class MqttService {
             List<String> topics = config.getMqttTopics();
             for (String topic : topics) {
                 mqttClient.subscribe(topic, 1); // QoS 1: at least once delivery
-                LOGGER.info(() -> "Subscribed to topic: " + topic);
+                LOGGER.info("Subscribed to topic: {}", topic);
             }
 
         } catch (MqttException e) {
@@ -177,7 +177,7 @@ public class MqttService {
                 mqttClient.close();
                 LOGGER.info("MQTT connection closed");
             } catch (MqttException e) {
-                LOGGER.log(Level.WARNING, "Error during MQTT cleanup", e);
+                LOGGER.warn("Error during MQTT cleanup", e);
             }
         }
     }

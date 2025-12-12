@@ -4,7 +4,9 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Properties;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.matjazt.networkmonitor.config.ConfigProvider;
 import com.matjazt.networkmonitor.entity.Device;
@@ -33,7 +35,7 @@ import jakarta.transaction.Transactional;
 @Startup
 public class AlerterService {
 
-    private static final Logger LOGGER = Logger.getLogger(AlerterService.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(AlerterService.class);
 
     @Inject
     private ConfigProvider config;
@@ -79,16 +81,16 @@ public class AlerterService {
                     + device.getIpAddress() + ")";
         }
 
-        LOGGER.warning("ALERT: " + message);
+        LOGGER.warn("ALERT: {}", message);
 
         // Send email if network has an email address configured
         if (network != null && network.getEmailAddress() != null && !network.getEmailAddress().trim().isEmpty()) {
             try {
                 // TODO: subject could be a parameter
                 sendEmail(network.getEmailAddress(), "[" + network.getName() + "] network alert", message.toString());
-                LOGGER.info("Alert email sent to: " + network.getEmailAddress());
+                LOGGER.info("Alert email sent to: {}", network.getEmailAddress());
             } catch (Exception e) {
-                LOGGER.severe("Failed to send alert email: " + e.getMessage());
+                LOGGER.error("Failed to send alert email", e);
                 throw new RuntimeException("Failed to send alert email to " + network.getEmailAddress(), e);
             }
         }
