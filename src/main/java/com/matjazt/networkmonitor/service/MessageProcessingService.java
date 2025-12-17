@@ -67,9 +67,11 @@ public class MessageProcessingService {
             // Parse JSON payload to Java object using JSON-B
             NetworkStatusMessage message = parseMessage(payload);
 
+            var messageTimestamp = LocalDateTime.ofInstant(message.getTimestamp(), ZoneOffset.UTC);
+
             // Get or create network record
             Network network = getOrCreateNetwork(networkName);
-            network.updateLastSeen();
+            network.setLastSeen(messageTimestamp);
             networkRepository.save(network);
 
             // Get list of currently online MACs from message
@@ -78,7 +80,6 @@ public class MessageProcessingService {
                 currentlyOnlineMacs.add(device.getMac());
             }
 
-            var messageTimestamp = LocalDateTime.ofInstant(message.getTimestamp(), ZoneOffset.UTC);
             // load all devices from the device repository for this network
             var knownDevices = deviceRepository.findAllForNetwork(network.getId());
 
@@ -213,15 +214,21 @@ public class MessageProcessingService {
 
     /**
      * Extract network name from MQTT topic.
-     * Takes the last part after the last '/', falls back to entire topic name if no
-     * slash found.
+     * The topic is expected to be in format
+     * "something/maybeSomethingElse/AndSoOn/NetworkName/operationName".
      */
     private String extractNetworkName(String topic) {
 
-        int lastSlash = topic.lastIndexOf('/');
-        return (lastSlash >= 0 && lastSlash < topic.length() - 1)
-                ? topic.substring(lastSlash + 1)
-                : topic;
+        int rightSlashIndex = topic.lastIndexOf('/');
+        if (rightSlashIndex > 0) {
+            int leftSlashIndex = topic.lastIndexOf('/', rightSlashIndex - 1);
+            if (leftSlashIndex >= 0) {
+                return topic.substring(leftSlashIndex + 1, rightSlashIndex);
+            }
+        }
+
+        LOGGER.warn("Topic does not follow expected format, using entire topic as network name: {}", topic);
+        return topic;
     }
 
     /**

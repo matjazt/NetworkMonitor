@@ -47,7 +47,7 @@ public class Device {
     /**
      * Unique identifier for the device (MAC address).
      */
-    @Column(name = "mac_address", nullable = false, unique = true, length = 17)
+    @Column(name = "mac_address", nullable = false, length = 17)
     private String macAddress;
 
     /**

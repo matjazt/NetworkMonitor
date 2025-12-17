@@ -50,3 +50,5 @@ from
 
 alter TABLE network
 drop column alertingdelay;
+
+insert into account_type (id, name, description) values (1, 'admin', 'administrator'), (2, 'user', 'ordinary user'), (3, 'device', 'montoring device')

@@ -106,13 +106,6 @@ public class Network {
         this.lastSeen = lastSeen;
     }
 
-    /**
-     * Updates the last seen timestamp to now.
-     */
-    public void updateLastSeen() {
-        this.lastSeen = LocalDateTime.now(ZoneOffset.UTC);
-    }
-
     public Integer getAlertingDelay() {
         return alertingDelay;
     }
