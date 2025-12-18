@@ -94,6 +94,13 @@
             <version>3.1.1</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- BCrypt password hashing -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
     </dependencies>
     <build>
         <!-- The final WAR file name (without .war extension) -->

@@ -74,16 +74,30 @@ public class AccountManagementDAO {
     }
 
     /**
-     * Verify password against stored hash.
-     * 
-     * TODO: Implement proper password hashing (BCrypt, Argon2, etc.)
-     * For now, this is a placeholder that compares plain text.
+     * Verify password against stored BCrypt hash.
      */
     public boolean verifyPassword(String plainPassword, String storedHash) {
-        // TEMPORARY: Plain text comparison
-        // TODO: Replace with proper password verification:
-        // return BCrypt.checkpw(plainPassword, storedHash);
-        return plainPassword.equals(storedHash);
+        try {
+            return org.mindrot.jbcrypt.BCrypt.checkpw(plainPassword, storedHash);
+        } catch (Exception e) {
+            var hashedPassword = hashPassword(plainPassword);
+            logger.warn("Password verification failed", e);
+            logger.debug("computed hash you can put into database: {}", hashedPassword);
+            return false;
+        }
+    }
+
+    /**
+     * Hash a plain text password using BCrypt.
+     * Use this when creating or updating accounts.
+     * 
+     * @param plainPassword The plain text password
+     * @return BCrypt hash string (includes salt)
+     */
+    public String hashPassword(String plainPassword) {
+        // 8 rounds = should be pretty fast, adjust as needed for security/performance
+        // balance
+        return org.mindrot.jbcrypt.BCrypt.hashpw(plainPassword, org.mindrot.jbcrypt.BCrypt.gensalt(8));
     }
 
     /**
