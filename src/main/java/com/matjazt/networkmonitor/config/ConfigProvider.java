@@ -115,6 +115,14 @@ public class ConfigProvider {
     @ConfigProperty(name = "smtp.connection.timeout", defaultValue = "10000")
     private Integer smtpConnectionTimeout;
 
+    @Inject
+    @ConfigProperty(name = "alert.check.initial.delay", defaultValue = "30")
+    private Integer alertCheckInitialDelay;
+
+    @Inject
+    @ConfigProperty(name = "alert.check.interval", defaultValue = "60")
+    private Integer alertCheckInterval;
+
     // Inject the Config object for dynamic lookups
     // @Inject
     // private Config config;
@@ -211,5 +219,13 @@ public class ConfigProvider {
 
     public Integer getSmtpConnectionTimeout() {
         return smtpConnectionTimeout;
+    }
+
+    public Integer getAlertCheckInitialDelay() {
+        return alertCheckInitialDelay;
+    }
+
+    public Integer getAlertCheckInterval() {
+        return alertCheckInterval;
     }
 }

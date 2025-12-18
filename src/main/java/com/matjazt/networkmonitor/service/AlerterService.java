@@ -17,9 +17,12 @@ import com.matjazt.networkmonitor.repository.NetworkRepository;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import jakarta.ejb.Schedule;
+import jakarta.annotation.Resource;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.TimerConfig;
+import jakarta.ejb.TimerService;
 import jakarta.inject.Inject;
 import jakarta.mail.Authenticator;
 import jakarta.mail.Message;
@@ -37,6 +40,9 @@ public class AlerterService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AlerterService.class);
 
+    @Resource
+    private TimerService timerService;
+
     @Inject
     private ConfigProvider config;
 
@@ -51,13 +57,25 @@ public class AlerterService {
 
     /**
      * Called automatically after dependency injection completes.
-     * Similar to .NET's IHostedService.StartAsync().
-     * 
-     * @PostConstruct is a lifecycle callback - runs once during initialization.
+     * Creates a programmatic timer with configurable delay and interval.
      */
     @PostConstruct
     public void initialize() {
         LOGGER.info("starting up...");
+
+        // Read configuration
+        var initialDelaySeconds = config.getAlertCheckInitialDelay();
+        var intervalSeconds = config.getAlertCheckInterval();
+
+        // Create repeating timer
+        TimerConfig timerConfig = new TimerConfig("AlertChecker", false);
+        timerService.createIntervalTimer(
+                initialDelaySeconds * 1000, // Initial delay in milliseconds
+                intervalSeconds * 1000, // Interval in milliseconds
+                timerConfig);
+
+        LOGGER.info("Alert check timer created - initial delay: {}s, interval: {}s",
+                initialDelaySeconds, intervalSeconds);
     }
 
     /**
@@ -142,8 +160,11 @@ public class AlerterService {
         Transport.send(message);
     }
 
-    // Runs every 60 seconds automatically
-    @Schedule(second = "0,10,20,30,40,50", minute = "*", hour = "*")
+    /**
+     * Scheduled alert checking triggered by programmatic timer.
+     * Replaces @Schedule annotation for runtime configuration.
+     */
+    @Timeout
     public void checkForAlerts() {
         LOGGER.info("Running scheduled alert task...");
 
