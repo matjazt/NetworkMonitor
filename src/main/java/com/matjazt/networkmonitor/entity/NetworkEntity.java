@@ -21,7 +21,7 @@ import jakarta.persistence.Table;
  */
 @Entity // Marks this class as a database entity
 @Table(name = "network") // Maps to "network" table in database
-public class Network {
+public class NetworkEntity {
 
     @Id // Primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment by database
@@ -62,10 +62,10 @@ public class Network {
     private LocalDateTime activeAlarmTime;
 
     // JPA requires a no-argument constructor
-    public Network() {
+    public NetworkEntity() {
     }
 
-    public Network(String name) {
+    public NetworkEntity(String name) {
         this.name = name;
         this.firstSeen = LocalDateTime.now(ZoneOffset.UTC);
         this.lastSeen = LocalDateTime.now(ZoneOffset.UTC);

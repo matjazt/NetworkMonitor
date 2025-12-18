@@ -27,7 +27,7 @@ import jakarta.persistence.Table;
         @Index(name = "idx_device_mac", columnList = "mac_address"),
         @Index(name = "idx_device_network", columnList = "network_id")
 })
-public class Device {
+public class DeviceEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,7 +38,7 @@ public class Device {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "network_id", nullable = false)
-    private Network network;
+    private NetworkEntity network;
 
     /**
      * Human-readable device name.
@@ -91,10 +91,10 @@ public class Device {
     private LocalDateTime activeAlarmTime;
 
     // JPA requires no-arg constructor
-    public Device() {
+    public DeviceEntity() {
     }
 
-    public Device(Network network, String macAddress, String ipAddress, Boolean online) {
+    public DeviceEntity(NetworkEntity network, String macAddress, String ipAddress, Boolean online) {
         this.network = network;
         this.macAddress = macAddress;
         this.ipAddress = ipAddress;
@@ -113,11 +113,11 @@ public class Device {
         this.id = id;
     }
 
-    public Network getNetwork() {
+    public NetworkEntity getNetwork() {
         return network;
     }
 
-    public void setNetwork(Network network) {
+    public void setNetwork(NetworkEntity network) {
         this.network = network;
     }
 

@@ -20,7 +20,7 @@ import jakarta.persistence.Table;
  */
 @Entity
 @Table(name = "account")
-public class Account {
+public class AccountEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +31,7 @@ public class Account {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "account_type_id", nullable = false)
-    private AccountType accountType;
+    private AccountTypeEntity accountType;
 
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
@@ -49,10 +49,10 @@ public class Account {
     private LocalDateTime lastSeen;
 
     // Constructors
-    public Account() {
+    public AccountEntity() {
     }
 
-    public Account(String username, AccountType accountType, String passwordHash,
+    public AccountEntity(String username, AccountTypeEntity accountType, String passwordHash,
             String fullName, String email) {
         this.username = username;
         this.accountType = accountType;
@@ -86,11 +86,11 @@ public class Account {
         this.username = username;
     }
 
-    public AccountType getAccountType() {
+    public AccountTypeEntity getAccountType() {
         return accountType;
     }
 
-    public void setAccountType(AccountType accountType) {
+    public void setAccountType(AccountTypeEntity accountType) {
         this.accountType = accountType;
     }
 
@@ -140,7 +140,7 @@ public class Account {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        Account account = (Account) o;
+        AccountEntity account = (AccountEntity) o;
         return Objects.equals(id, account.id);
     }
 

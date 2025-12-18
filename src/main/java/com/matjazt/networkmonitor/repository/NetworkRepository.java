@@ -3,7 +3,7 @@ package com.matjazt.networkmonitor.repository;
 import java.util.List;
 import java.util.Optional;
 
-import com.matjazt.networkmonitor.entity.Network;
+import com.matjazt.networkmonitor.entity.NetworkEntity;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
@@ -40,12 +40,12 @@ public class NetworkRepository {
      * @param name Network name to search for
      * @return Optional containing the network if found, empty otherwise
      */
-    public Optional<Network> findByName(String name) {
+    public Optional<NetworkEntity> findByName(String name) {
         try {
             // JPQL (JPA Query Language) - similar to SQL but uses entity names
             // :name is a named parameter to prevent SQL injection
-            Network network = em.createQuery(
-                    "SELECT n FROM Network n WHERE n.name = :name", Network.class)
+            NetworkEntity network = em.createQuery(
+                    "SELECT n FROM NetworkEntity n WHERE n.name = :name", NetworkEntity.class)
                     .setParameter("name", name)
                     .getSingleResult();
             return Optional.of(network);
@@ -59,8 +59,8 @@ public class NetworkRepository {
      * 
      * @return List of all networks ordered by name
      */
-    public List<Network> findAll() {
-        return em.createQuery("SELECT n FROM Network n ORDER BY n.id", Network.class)
+    public List<NetworkEntity> findAll() {
+        return em.createQuery("SELECT n FROM NetworkEntity n ORDER BY n.id", NetworkEntity.class)
                 .getResultList();
     }
 
@@ -71,7 +71,7 @@ public class NetworkRepository {
      * @return The saved/updated network (with ID if new)
      */
     @Transactional // Requires transaction for write operations
-    public Network save(Network network) {
+    public NetworkEntity save(NetworkEntity network) {
         if (network.getId() == null) {
             // New entity - persist adds it to the database
             em.persist(network);

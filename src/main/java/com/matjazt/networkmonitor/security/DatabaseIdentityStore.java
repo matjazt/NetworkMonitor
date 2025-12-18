@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.matjazt.networkmonitor.dao.AccountManagementDAO;
-import com.matjazt.networkmonitor.entity.Account;
-import com.matjazt.networkmonitor.entity.Network;
+import com.matjazt.networkmonitor.entity.AccountEntity;
+import com.matjazt.networkmonitor.entity.NetworkEntity;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -38,14 +38,14 @@ public class DatabaseIdentityStore implements IdentityStore {
 
             try {
                 // Find account by username
-                Account account = accountManagementDAO.findAccountByUsername(username);
+                AccountEntity account = accountManagementDAO.findAccountByUsername(username);
 
                 if (account != null && accountManagementDAO.verifyPassword(password, account.getPasswordHash())) {
                     // Update last seen
                     accountManagementDAO.updateLastSeen(account);
 
                     // Get networks
-                    List<Network> networks = accountManagementDAO.getNetworksForAccount(account);
+                    List<NetworkEntity> networks = accountManagementDAO.getNetworksForAccount(account);
 
                     // Create enriched principal
                     AccountPrincipal principal = new AccountPrincipal(account, networks);

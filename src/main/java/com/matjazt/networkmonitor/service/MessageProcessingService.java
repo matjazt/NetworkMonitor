@@ -10,10 +10,10 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.matjazt.networkmonitor.entity.Device;
+import com.matjazt.networkmonitor.entity.DeviceEntity;
 import com.matjazt.networkmonitor.entity.DeviceOperationMode;
-import com.matjazt.networkmonitor.entity.DeviceStatusHistory;
-import com.matjazt.networkmonitor.entity.Network;
+import com.matjazt.networkmonitor.entity.DeviceStatusHistoryEntity;
+import com.matjazt.networkmonitor.entity.NetworkEntity;
 import com.matjazt.networkmonitor.model.NetworkStatusMessage;
 import com.matjazt.networkmonitor.repository.DeviceRepository;
 import com.matjazt.networkmonitor.repository.DeviceStatusRepository;
@@ -71,7 +71,7 @@ public class MessageProcessingService {
             var messageTimestamp = LocalDateTime.ofInstant(message.getTimestamp(), ZoneOffset.UTC);
 
             // Get or create network record
-            Network network = getOrCreateNetwork(networkName);
+            NetworkEntity network = getOrCreateNetwork(networkName);
             network.setLastSeen(messageTimestamp);
             networkRepository.save(network);
 
@@ -113,7 +113,7 @@ public class MessageProcessingService {
 
                 if (knownDeviceOpt.isEmpty()) {
                     // new device, add to repository
-                    var newDevice = new Device();
+                    var newDevice = new DeviceEntity();
                     newDevice.setNetwork(network);
                     newDevice.setMacAddress(mac);
                     newDevice.setIpAddress(ip);
@@ -171,7 +171,7 @@ public class MessageProcessingService {
                 }
 
                 if (shouldRecord) {
-                    DeviceStatusHistory status = new DeviceStatusHistory(
+                    DeviceStatusHistoryEntity status = new DeviceStatusHistoryEntity(
                             network, mac, ip, true, messageTimestamp);
                     deviceStatusRepository.save(status);
                 }
@@ -201,7 +201,7 @@ public class MessageProcessingService {
                     LOGGER.info("Device went offline: " + mac + " (" + ip + ") on " + network.getName());
 
                     // Record offline status with last known IP
-                    var offlineStatus = new DeviceStatusHistory(
+                    var offlineStatus = new DeviceStatusHistoryEntity(
                             network, mac,
                             ip,
                             false, messageTimestamp);
@@ -250,10 +250,10 @@ public class MessageProcessingService {
     /**
      * Get existing network or create a new one.
      */
-    private Network getOrCreateNetwork(String networkName) {
+    private NetworkEntity getOrCreateNetwork(String networkName) {
         return networkRepository.findByName(networkName)
                 .orElseGet(() -> {
-                    Network newNetwork = new Network(networkName);
+                    NetworkEntity newNetwork = new NetworkEntity(networkName);
                     return networkRepository.save(newNetwork);
                 });
     }

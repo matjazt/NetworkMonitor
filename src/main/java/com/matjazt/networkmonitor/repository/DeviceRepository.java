@@ -2,7 +2,7 @@ package com.matjazt.networkmonitor.repository;
 
 import java.util.List;
 
-import com.matjazt.networkmonitor.entity.Device;
+import com.matjazt.networkmonitor.entity.DeviceEntity;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
@@ -38,8 +38,8 @@ public class DeviceRepository {
      * @param networkId The ID of the network
      * @return List of all devices for the given network ID
      */
-    public List<Device> findAllForNetwork(long networkId) {
-        return em.createQuery("SELECT n FROM Device n WHERE n.network.id = :networkId", Device.class)
+    public List<DeviceEntity> findAllForNetwork(long networkId) {
+        return em.createQuery("SELECT n FROM DeviceEntity n WHERE n.network.id = :networkId", DeviceEntity.class)
                 .setParameter("networkId", networkId)
                 .getResultList();
     }
@@ -51,7 +51,7 @@ public class DeviceRepository {
      * @return The saved/updated device (with ID if new)
      */
     @Transactional // Requires transaction for write operations
-    public Device save(Device device) {
+    public DeviceEntity save(DeviceEntity device) {
         if (device.getId() == null) {
             // New entity - persist adds it to the database
             em.persist(device);

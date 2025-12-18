@@ -6,9 +6,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.matjazt.networkmonitor.entity.Account;
-import com.matjazt.networkmonitor.entity.AccountNetwork;
-import com.matjazt.networkmonitor.entity.Network;
+import com.matjazt.networkmonitor.entity.AccountEntity;
+import com.matjazt.networkmonitor.entity.AccountNetworkEntity;
+import com.matjazt.networkmonitor.entity.NetworkEntity;
 
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
@@ -36,13 +36,13 @@ public class AccountManagementDAO {
      * @return List of networks the account has access to
      * @throws AuthenticationException if username/password combination is invalid
      */
-    public List<Network> getNetworksForAccount_DONT_USE_THIS_ONE(String username, String password)
+    public List<NetworkEntity> getNetworksForAccount_DONT_USE_THIS_ONE(String username, String password)
             throws AuthenticationException {
 
         logger.debug("Attempting authentication for username: {}", username);
 
         // Step 1: Find account by username
-        Account account = findAccountByUsername(username);
+        AccountEntity account = findAccountByUsername(username);
         if (account == null || !verifyPassword(password, account.getPasswordHash())) {
             throw new AuthenticationException("Invalid username or password");
         }
@@ -51,7 +51,7 @@ public class AccountManagementDAO {
         updateLastSeen(account);
 
         // Step 4: Retrieve networks for this account
-        List<Network> networks = getNetworksForAccount(account);
+        List<NetworkEntity> networks = getNetworksForAccount(account);
 
         logger.info("User {} authenticated successfully, has access to {} network(s)",
                 username, networks.size());
@@ -62,10 +62,10 @@ public class AccountManagementDAO {
     /**
      * Find an account by username.
      */
-    public Account findAccountByUsername(String username) {
+    public AccountEntity findAccountByUsername(String username) {
         try {
-            TypedQuery<Account> query = em.createQuery(
-                    "SELECT a FROM Account a WHERE a.username = :username", Account.class);
+            TypedQuery<AccountEntity> query = em.createQuery(
+                    "SELECT a FROM Account a WHERE a.username = :username", AccountEntity.class);
             query.setParameter("username", username);
             return query.getSingleResult();
         } catch (NoResultException e) {
@@ -103,7 +103,7 @@ public class AccountManagementDAO {
     /**
      * Update the account's last_seen timestamp.
      */
-    public void updateLastSeen(Account account) {
+    public void updateLastSeen(AccountEntity account) {
         account.setLastSeen(LocalDateTime.now());
         em.merge(account);
     }
@@ -111,15 +111,15 @@ public class AccountManagementDAO {
     /**
      * Retrieve all networks that the account has access to.
      */
-    public List<Network> getNetworksForAccount(Account account) {
-        TypedQuery<AccountNetwork> query = em.createQuery(
+    public List<NetworkEntity> getNetworksForAccount(AccountEntity account) {
+        TypedQuery<AccountNetworkEntity> query = em.createQuery(
                 "SELECT an.network FROM AccountNetwork an " +
                         " WHERE an.account.id = :accountId " +
                         " ORDER BY an.network.name ",
-                AccountNetwork.class);
+                AccountNetworkEntity.class);
         query.setParameter("accountId", account.getId());
         return query.getResultList().stream()
-                .map(AccountNetwork::getNetwork)
+                .map(AccountNetworkEntity::getNetwork)
                 .toList();
     }
 

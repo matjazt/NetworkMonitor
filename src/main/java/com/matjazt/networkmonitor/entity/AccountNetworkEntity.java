@@ -18,7 +18,7 @@ import jakarta.persistence.Table;
  */
 @Entity
 @Table(name = "account_network")
-public class AccountNetwork implements Serializable {
+public class AccountNetworkEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,35 +26,35 @@ public class AccountNetwork implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
-    private Account account;
+    private AccountEntity account;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "network_id", nullable = false)
-    private Network network;
+    private NetworkEntity network;
 
     // Constructors
-    public AccountNetwork() {
+    public AccountNetworkEntity() {
     }
 
-    public AccountNetwork(Account account, Network network) {
+    public AccountNetworkEntity(AccountEntity account, NetworkEntity network) {
         this.account = account;
         this.network = network;
     }
 
     // Getters and Setters
-    public Account getAccount() {
+    public AccountEntity getAccount() {
         return account;
     }
 
-    public void setAccount(Account account) {
+    public void setAccount(AccountEntity account) {
         this.account = account;
     }
 
-    public Network getNetwork() {
+    public NetworkEntity getNetwork() {
         return network;
     }
 
-    public void setNetwork(Network network) {
+    public void setNetwork(NetworkEntity network) {
         this.network = network;
     }
 
@@ -64,7 +64,7 @@ public class AccountNetwork implements Serializable {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        AccountNetwork that = (AccountNetwork) o;
+        AccountNetworkEntity that = (AccountNetworkEntity) o;
         return Objects.equals(account, that.account) &&
                 Objects.equals(network, that.network);
     }

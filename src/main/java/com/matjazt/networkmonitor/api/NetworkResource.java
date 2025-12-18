@@ -12,8 +12,8 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-import com.matjazt.networkmonitor.entity.DeviceStatusHistory;
-import com.matjazt.networkmonitor.entity.Network;
+import com.matjazt.networkmonitor.entity.DeviceStatusHistoryEntity;
+import com.matjazt.networkmonitor.entity.NetworkEntity;
 import com.matjazt.networkmonitor.repository.DeviceStatusRepository;
 import com.matjazt.networkmonitor.repository.NetworkRepository;
 import com.matjazt.networkmonitor.security.AccountPrincipal;
@@ -67,7 +67,7 @@ public class NetworkResource {
             @APIResponse(responseCode = "200", description = "Successfully retrieved networks", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
     public Response getNetworks() {
-        List<Network> networks = networkRepository.findAll();
+        List<NetworkEntity> networks = networkRepository.findAll();
 
         // Convert entities to DTOs (Data Transfer Objects)
         // We don't expose entities directly to avoid over-fetching and
@@ -103,7 +103,7 @@ public class NetworkResource {
     public Response getOnlineDevices(
             @Parameter(description = "Name of the network", required = true, example = "MaliGrdi") @PathParam("networkName") String networkName) {
         // Find the network
-        Optional<Network> networkOpt = networkRepository.findByName(networkName);
+        Optional<NetworkEntity> networkOpt = networkRepository.findByName(networkName);
 
         if (networkOpt.isEmpty()) {
             // Return 404 Not Found if network doesn't exist
@@ -112,10 +112,10 @@ public class NetworkResource {
                     .build();
         }
 
-        Network network = networkOpt.get();
+        NetworkEntity network = networkOpt.get();
 
         // Get currently online devices
-        List<DeviceStatusHistory> onlineDevices = deviceStatusRepository.findCurrentlyOnline(network);
+        List<DeviceStatusHistoryEntity> onlineDevices = deviceStatusRepository.findCurrentlyOnline(network);
 
         // Convert to DTOs
         List<Map<String, Object>> deviceDtos = onlineDevices.stream()
@@ -138,7 +138,7 @@ public class NetworkResource {
      * Using Map<String, Object> is a simple approach for DTOs.
      * In larger applications, you might create dedicated DTO classes.
      */
-    private Map<String, Object> toNetworkDto(Network network) {
+    private Map<String, Object> toNetworkDto(NetworkEntity network) {
         return Map.of(
                 "id", network.getId(),
                 "name", network.getName(),
@@ -149,7 +149,7 @@ public class NetworkResource {
     /**
      * Convert DeviceStatusHistory entity to DTO.
      */
-    private Map<String, Object> toDeviceDto(DeviceStatusHistory device) {
+    private Map<String, Object> toDeviceDto(DeviceStatusHistoryEntity device) {
         return Map.of(
                 "macAddress", device.getMacAddress(),
                 "ipAddress", device.getIpAddress(),

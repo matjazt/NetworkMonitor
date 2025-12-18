@@ -15,7 +15,7 @@ import jakarta.persistence.Table;
  */
 @Entity
 @Table(name = "account_type")
-public class AccountType {
+public class AccountTypeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,10 +28,10 @@ public class AccountType {
     private String description;
 
     // Constructors
-    public AccountType() {
+    public AccountTypeEntity() {
     }
 
-    public AccountType(String name, String description) {
+    public AccountTypeEntity(String name, String description) {
         this.name = name;
         this.description = description;
     }
@@ -67,7 +67,7 @@ public class AccountType {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        AccountType accountType = (AccountType) o;
+        AccountTypeEntity accountType = (AccountTypeEntity) o;
         return Objects.equals(id, accountType.id);
     }
 

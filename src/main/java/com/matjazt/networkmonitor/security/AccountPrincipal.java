@@ -3,8 +3,8 @@ package com.matjazt.networkmonitor.security;
 import java.util.Collections;
 import java.util.List;
 
-import com.matjazt.networkmonitor.entity.Account;
-import com.matjazt.networkmonitor.entity.Network;
+import com.matjazt.networkmonitor.entity.AccountEntity;
+import com.matjazt.networkmonitor.entity.NetworkEntity;
 
 import jakarta.security.enterprise.CallerPrincipal;
 
@@ -16,10 +16,10 @@ import jakarta.security.enterprise.CallerPrincipal;
  */
 public class AccountPrincipal extends CallerPrincipal {
 
-    private final Account account;
-    private final List<Network> networks;
+    private final AccountEntity account;
+    private final List<NetworkEntity> networks;
 
-    public AccountPrincipal(Account account, List<Network> networks) {
+    public AccountPrincipal(AccountEntity account, List<NetworkEntity> networks) {
         super(account.getUsername());
         this.account = account;
         this.networks = networks != null ? networks : Collections.emptyList();
@@ -30,11 +30,11 @@ public class AccountPrincipal extends CallerPrincipal {
         return account.getUsername();
     }
 
-    public Account getAccount() {
+    public AccountEntity getAccount() {
         return account;
     }
 
-    public List<Network> getNetworks() {
+    public List<NetworkEntity> getNetworks() {
         return networks;
     }
 

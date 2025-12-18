@@ -9,9 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.matjazt.networkmonitor.config.ConfigProvider;
-import com.matjazt.networkmonitor.entity.Device;
+import com.matjazt.networkmonitor.entity.DeviceEntity;
 import com.matjazt.networkmonitor.entity.DeviceOperationMode;
-import com.matjazt.networkmonitor.entity.Network;
+import com.matjazt.networkmonitor.entity.NetworkEntity;
 import com.matjazt.networkmonitor.repository.DeviceRepository;
 import com.matjazt.networkmonitor.repository.DeviceStatusRepository;
 import com.matjazt.networkmonitor.repository.NetworkRepository;
@@ -90,7 +90,7 @@ public class AlerterService {
         LOGGER.info("shutting down...");
     }
 
-    public void sendAlert(String message, Network network, Device device) {
+    public void sendAlert(String message, NetworkEntity network, DeviceEntity device) {
         if (network != null) {
             message += "\nNetwork: " + network.getName();
         }
@@ -170,14 +170,14 @@ public class AlerterService {
         LOGGER.info("Running scheduled alert task...");
 
         // process networks one by one
-        for (Network network : networkRepository.findAll()) {
+        for (NetworkEntity network : networkRepository.findAll()) {
             processNetworkAlerts(network);
         }
 
     }
 
     @Transactional
-    private void processNetworkAlerts(Network network) {
+    private void processNetworkAlerts(NetworkEntity network) {
 
         // see if the entire network is down or up
 
@@ -205,7 +205,7 @@ public class AlerterService {
         }
 
         // now check individual devices
-        for (Device device : deviceRepository.findAllForNetwork(network.getId())) {
+        for (DeviceEntity device : deviceRepository.findAllForNetwork(network.getId())) {
 
             if (device.getDeviceOperationMode() == DeviceOperationMode.ALWAYS_ON) {
                 // the device should always be online, check its status

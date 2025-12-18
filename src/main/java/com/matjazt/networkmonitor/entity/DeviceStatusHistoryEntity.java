@@ -28,7 +28,7 @@ import jakarta.persistence.Table;
         // Index for finding current status of a device
         @Index(name = "idx_mac_timestamp", columnList = "mac_address, timestamp")
 })
-public class DeviceStatusHistory {
+public class DeviceStatusHistoryEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,7 +43,7 @@ public class DeviceStatusHistory {
      */
     @ManyToOne(fetch = FetchType.LAZY) // LAZY = don't load network unless accessed
     @JoinColumn(name = "network_id", nullable = false)
-    private Network network;
+    private NetworkEntity network;
 
     /**
      * Device MAC address - permanent identifier for the device.
@@ -72,10 +72,10 @@ public class DeviceStatusHistory {
     private LocalDateTime timestamp;
 
     // JPA requires no-arg constructor
-    public DeviceStatusHistory() {
+    public DeviceStatusHistoryEntity() {
     }
 
-    public DeviceStatusHistory(Network network, String macAddress, String ipAddress,
+    public DeviceStatusHistoryEntity(NetworkEntity network, String macAddress, String ipAddress,
             Boolean online, LocalDateTime timestamp) {
         this.network = network;
         this.macAddress = macAddress;
@@ -94,11 +94,11 @@ public class DeviceStatusHistory {
         this.id = id;
     }
 
-    public Network getNetwork() {
+    public NetworkEntity getNetwork() {
         return network;
     }
 
-    public void setNetwork(Network network) {
+    public void setNetwork(NetworkEntity network) {
         this.network = network;
     }
 
