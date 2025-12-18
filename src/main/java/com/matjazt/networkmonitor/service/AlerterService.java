@@ -207,7 +207,27 @@ public class AlerterService {
         // now check individual devices
         for (DeviceEntity device : deviceRepository.findAllForNetwork(network.getId())) {
 
-            if (device.getDeviceOperationMode() == DeviceOperationMode.ALWAYS_ON) {
+            if (device.getDeviceOperationMode() == DeviceOperationMode.NOT_ALLOWED) {
+                // the device is not allowed on the network
+                // alerts for such cases are sent when the device first appears, so here we can
+                // just check if it's gone
+                if (device.getActiveAlarmTime() != null && device.getLastSeen().isBefore(alertingThreshold)) {
+                    // device is gone, clear alarm
+                    sendAlert("Unauthorized device is no longer detected on the network.", network, device);
+                    device.setActiveAlarmTime(null);
+                    deviceRepository.save(device);
+                }
+            } else if (device.getDeviceOperationMode() == DeviceOperationMode.ALLOWED) {
+                // the device is allowed, no alerts needed, but we can clear any active alarms
+                // in case they were set before (e.g., if the device was previously NOT_ALLOWED)
+                if (device.getActiveAlarmTime() != null) {
+                    sendAlert(
+                            "Allowed device alarm cleared (it was previously not allowed or always on, hence the alarm).",
+                            network, device);
+                    device.setActiveAlarmTime(null);
+                    deviceRepository.save(device);
+                }
+            } else if (device.getDeviceOperationMode() == DeviceOperationMode.ALWAYS_ON) {
                 // the device should always be online, check its status
                 if (device.getLastSeen().isBefore(alertingThreshold)) {
                     // device is down
@@ -231,19 +251,7 @@ public class AlerterService {
                         deviceRepository.save(device);
                     }
                 }
-            } else if (device.getDeviceOperationMode() == DeviceOperationMode.NOT_ALLOWED) {
-                // the device is not allowed on the network
-                // alerts for such cases are sent when the device first appears, so here we can
-                // just check if it's gone
-                if (device.getActiveAlarmTime() != null && device.getLastSeen().isBefore(alertingThreshold)) {
-                    // device is gone, clear alarm
-                    sendAlert("Unauthorized device is no longer detected on the network.", network, device);
-                    device.setActiveAlarmTime(null);
-                    deviceRepository.save(device);
-                }
-
             }
-
         }
 
     }
