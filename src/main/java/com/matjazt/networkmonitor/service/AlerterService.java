@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.matjazt.networkmonitor.config.ConfigProvider;
 import com.matjazt.networkmonitor.entity.Device;
+import com.matjazt.networkmonitor.entity.DeviceOperationMode;
 import com.matjazt.networkmonitor.entity.Network;
 import com.matjazt.networkmonitor.repository.DeviceRepository;
 import com.matjazt.networkmonitor.repository.DeviceStatusRepository;
@@ -206,7 +207,7 @@ public class AlerterService {
         // now check individual devices
         for (Device device : deviceRepository.findAllForNetwork(network.getId())) {
 
-            if (device.getAlwaysOn()) {
+            if (device.getDeviceOperationMode() == DeviceOperationMode.ALWAYS_ON) {
                 // the device should always be online, check its status
                 if (device.getLastSeen().isBefore(alertingThreshold)) {
                     // device is down
@@ -230,7 +231,7 @@ public class AlerterService {
                         deviceRepository.save(device);
                     }
                 }
-            } else if (device.getAllowed() == Boolean.FALSE) {
+            } else if (device.getDeviceOperationMode() == DeviceOperationMode.NOT_ALLOWED) {
                 // the device is not allowed on the network
                 // alerts for such cases are sent when the device first appears, so here we can
                 // just check if it's gone

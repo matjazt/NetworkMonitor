@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.matjazt.networkmonitor.entity.Device;
+import com.matjazt.networkmonitor.entity.DeviceOperationMode;
 import com.matjazt.networkmonitor.entity.DeviceStatusHistory;
 import com.matjazt.networkmonitor.entity.Network;
 import com.matjazt.networkmonitor.model.NetworkStatusMessage;
@@ -116,8 +117,8 @@ public class MessageProcessingService {
                     newDevice.setNetwork(network);
                     newDevice.setMacAddress(mac);
                     newDevice.setIpAddress(ip);
-                    newDevice.setAllowed(false); // default to not allowed
-                    newDevice.setAlwaysOn(false); // default to not always on
+                    // default to NOT_ALLOWED for new devices
+                    newDevice.setDeviceOperationMode(DeviceOperationMode.NOT_ALLOWED);
                     newDevice.setOnline(true); // currently online
                     newDevice.setFirstSeen(messageTimestamp);
                     newDevice.setLastSeen(messageTimestamp);
@@ -136,7 +137,8 @@ public class MessageProcessingService {
                     processedDevices.add(knownDevice.getId());
 
                     // see if alert needs to be sent for unauthorized device
-                    if (knownDevice.getAllowed() == false && knownDevice.getActiveAlarmTime() == null) {
+                    if (knownDevice.getDeviceOperationMode() == DeviceOperationMode.NOT_ALLOWED
+                            && knownDevice.getActiveAlarmTime() == null) {
                         // device is not allowed and no alert has been sent yet
                         alerterService.sendAlert("Unauthorized device detected on network.", network, knownDevice);
                         knownDevice.setActiveAlarmTime(LocalDateTime.now(ZoneOffset.UTC));
@@ -158,7 +160,7 @@ public class MessageProcessingService {
                     } else {
                         // The device was offline, now online
                         shouldRecord = true;
-                        if (knownDevice.getAllowed() == false) {
+                        if (knownDevice.getDeviceOperationMode() == DeviceOperationMode.NOT_ALLOWED) {
                             LOGGER.info("Device " + mac + " (" + ip + ") is not allowed on network "
                                     + network.getName() + " but is online!");
                         } else {

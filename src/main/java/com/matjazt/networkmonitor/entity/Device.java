@@ -5,6 +5,8 @@ import java.time.ZoneOffset;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -57,16 +59,12 @@ public class Device {
     private String ipAddress;
 
     /**
-     * Indicates if the device is allowed on the network.
+     * The operational mode of this device (not allowed, allowed, always on).
+     * Stored as integer matching operation_mode.id for referential integrity.
      */
-    @Column(nullable = false)
-    private Boolean allowed;
-
-    /**
-     * Indicates if the device is expected to always be on.
-     */
-    @Column(name = "always_on", nullable = false)
-    private Boolean alwaysOn;
+    @Column(name = "device_operation_mode_id", nullable = false)
+    @Enumerated(EnumType.ORDINAL)
+    private DeviceOperationMode deviceOperationMode;
 
     /**
      * Current online status.
@@ -147,20 +145,12 @@ public class Device {
         this.ipAddress = ipAddress;
     }
 
-    public Boolean getAllowed() {
-        return allowed;
+    public DeviceOperationMode getDeviceOperationMode() {
+        return deviceOperationMode;
     }
 
-    public void setAllowed(Boolean allowed) {
-        this.allowed = allowed;
-    }
-
-    public Boolean getAlwaysOn() {
-        return alwaysOn;
-    }
-
-    public void setAlwaysOn(Boolean alwaysOn) {
-        this.alwaysOn = alwaysOn;
+    public void setDeviceOperationMode(DeviceOperationMode operationMode) {
+        this.deviceOperationMode = operationMode;
     }
 
     public Boolean getOnline() {
