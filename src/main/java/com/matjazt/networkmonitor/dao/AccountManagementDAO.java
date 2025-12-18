@@ -65,7 +65,7 @@ public class AccountManagementDAO {
     public AccountEntity findAccountByUsername(String username) {
         try {
             TypedQuery<AccountEntity> query = em.createQuery(
-                    "SELECT a FROM Account a WHERE a.username = :username", AccountEntity.class);
+                    "SELECT a FROM AccountEntity a WHERE a.username = :username", AccountEntity.class);
             query.setParameter("username", username);
             return query.getSingleResult();
         } catch (NoResultException e) {
@@ -113,7 +113,7 @@ public class AccountManagementDAO {
      */
     public List<NetworkEntity> getNetworksForAccount(AccountEntity account) {
         TypedQuery<AccountNetworkEntity> query = em.createQuery(
-                "SELECT an.network FROM AccountNetwork an " +
+                "SELECT an.network FROM AccountNetworkEntity an " +
                         " WHERE an.account.id = :accountId " +
                         " ORDER BY an.network.name ",
                 AccountNetworkEntity.class);
