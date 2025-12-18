@@ -67,6 +67,16 @@ public class DeviceEntity {
     private DeviceOperationMode deviceOperationMode;
 
     /**
+     * Reference to DeviceOperationModeEntity for OpenJPA foreign key validation
+     * only.
+     * Not used in runtime code - insertable/updatable=false ensures enum field
+     * controls the value.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "device_operation_mode_id", insertable = false, updatable = false)
+    private DeviceOperationModeEntity deviceOperationModeRef;
+
+    /**
      * Current online status.
      */
     @Column(nullable = false)
