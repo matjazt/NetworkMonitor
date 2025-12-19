@@ -53,6 +53,10 @@ public class AccountEntity {
     public AccountEntity() {
     }
 
+    /**
+     * Creates a new account with the specified details.
+     * The createdAt timestamp is automatically set to current UTC time.
+     */
     public AccountEntity(String username, AccountTypeEntity accountType, String passwordHash,
             String fullName, String email) {
         this.username = username;
@@ -141,8 +145,8 @@ public class AccountEntity {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        AccountEntity account = (AccountEntity) o;
-        return Objects.equals(id, account.id);
+        AccountEntity that = (AccountEntity) o;
+        return Objects.equals(id, that.id);
     }
 
     @Override

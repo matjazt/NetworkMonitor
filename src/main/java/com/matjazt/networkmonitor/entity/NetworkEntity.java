@@ -115,9 +115,12 @@ public class NetworkEntity {
     }
 
     public String getEmailAddress() {
-        return emailAddress != null ? emailAddress.trim() : null;
+        return emailAddress;
     }
 
+    /**
+     * Sets the email address for alerts, automatically trimming whitespace.
+     */
     public void setEmailAddress(String emailAddress) {
         this.emailAddress = emailAddress != null ? emailAddress.trim() : null;
     }

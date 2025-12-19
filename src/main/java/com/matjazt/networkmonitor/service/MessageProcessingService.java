@@ -118,7 +118,7 @@ public class MessageProcessingService {
                     // persist the new device before using it in the alert
                     monitoringDao.save(device);
 
-                    alerterService.openAlert(AlertType.UNAUTHORIZED_DEVICE, network, device,
+                    alerterService.openAlert(AlertType.DEVICE_UNAUTHORIZED, network, device,
                             "device detected for the first time");
 
                     // also add to device history
@@ -136,7 +136,7 @@ public class MessageProcessingService {
                     if (device.getDeviceOperationMode() == DeviceOperationMode.UNAUTHORIZED
                             && device.getActiveAlertId() == null) {
                         // device is not allowed and no alert has been sent yet
-                        alerterService.openAlert(AlertType.UNAUTHORIZED_DEVICE, network, device,
+                        alerterService.openAlert(AlertType.DEVICE_UNAUTHORIZED, network, device,
                                 "device was seen before");
                     } else {
                         // openAlert saves the device, so only save if no alert was opened

@@ -24,7 +24,7 @@ public class AccountTypeEntity {
     @Column(nullable = false, unique = true, length = 50)
     private String name;
 
-    @Column(length = 255)
+    @Column(columnDefinition = "text")
     private String description;
 
     // Constructors
@@ -67,8 +67,8 @@ public class AccountTypeEntity {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        AccountTypeEntity accountType = (AccountTypeEntity) o;
-        return Objects.equals(id, accountType.id);
+        AccountTypeEntity that = (AccountTypeEntity) o;
+        return Objects.equals(id, that.id);
     }
 
     @Override

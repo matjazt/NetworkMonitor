@@ -42,6 +42,14 @@ public class AccountNetworkEntity implements Serializable {
     }
 
     // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public AccountEntity getAccount() {
         return account;
     }
@@ -65,8 +73,7 @@ public class AccountNetworkEntity implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         AccountNetworkEntity that = (AccountNetworkEntity) o;
-        return Objects.equals(account, that.account) &&
-                Objects.equals(network, that.network);
+        return Objects.equals(id, that.id);
     }
 
     @Override

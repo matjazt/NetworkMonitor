@@ -116,6 +116,7 @@ CREATE TABLE account_network (
 	CONSTRAINT fk_account_network_account FOREIGN KEY (account_id) REFERENCES account(id),
 	CONSTRAINT fk_account_network_network FOREIGN KEY (network_id) REFERENCES network(id)
 );
+CREATE UNIQUE INDEX account_network_uq_idx ON public.account_network USING btree (account_id, network_id);
 CREATE INDEX i_ccntwrk_account ON public.account_network USING btree (account_id);
 CREATE INDEX i_ccntwrk_network ON public.account_network USING btree (network_id);
 
@@ -170,16 +171,15 @@ CREATE INDEX i_alert_network ON public.alert USING btree (network_id);
 CREATE INDEX idx_alert_timestamp ON public.alert USING btree ("timestamp");
 
 
-
 INSERT INTO alert_type (id, name, description) VALUES
     (0, 'NETWORK_DOWN', 'Network connectivity lost or network went offline'),
     (1, 'DEVICE_DOWN', 'Device that should always be online is not responding'),
-    (2, 'DEVICE_NOT_ALLOWED', 'Unauthorized device detected on the network');
+    (2, 'DEVICE_UNAUTHORIZED', 'Unauthorized device detected on the network');
 
 
 INSERT INTO device_operation_mode (id, name, description) VALUES
-    (0, 'NOT_ALLOWED', 'Device is not allowed on the network'),
-    (1, 'ALLOWED', 'Device is allowed but not monitored'),
+    (0, 'UNAUTHORIZED', 'Device is not allowed on the network'),
+    (1, 'AUTHORIZED', 'Device is allowed but not monitored'),
     (2, 'ALWAYS_ON', 'Device should always be online and is monitored');
 
 insert into account_type (id, name, description) values 

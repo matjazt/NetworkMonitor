@@ -6,6 +6,6 @@ package com.matjazt.networkmonitor.entity;
  */
 public enum DeviceOperationMode {
     UNAUTHORIZED, // ordinal = 0
-    ALLOWED, // ordinal = 1
+    AUTHORIZED, // ordinal = 1
     ALWAYS_ON; // ordinal = 2
 }

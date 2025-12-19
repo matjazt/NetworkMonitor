@@ -23,7 +23,7 @@ public class DeviceOperationModeEntity {
     @Column(name = "name", nullable = false, unique = true, length = 50)
     private String name;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "text")
     private String description;
 
     // No getters/setters needed - this entity is never used in runtime code

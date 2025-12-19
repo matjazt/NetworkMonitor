@@ -65,7 +65,7 @@ public class AlerterService {
     private static final Map<AlertType, String> ALERT_TYPE_MESSAGES = Map.ofEntries(
             Map.entry(AlertType.NETWORK_DOWN, "Network is unavailable"),
             Map.entry(AlertType.DEVICE_DOWN, "Device is offline"),
-            Map.entry(AlertType.UNAUTHORIZED_DEVICE, "Unauthorized device detected"));
+            Map.entry(AlertType.DEVICE_UNAUTHORIZED, "Unauthorized device detected"));
 
     /**
      * Called automatically after dependency injection completes.
@@ -348,7 +348,7 @@ public class AlerterService {
                     // device is gone, clear alert
                     closeAlert(network, device, null);
                 }
-            } else if (device.getDeviceOperationMode() == DeviceOperationMode.ALLOWED) {
+            } else if (device.getDeviceOperationMode() == DeviceOperationMode.AUTHORIZED) {
                 // the device is allowed, no alerts needed, but we can clear any active alerts
                 // in case they were set before (e.g., if the device was previously
                 // UNAUTHORIZED)
