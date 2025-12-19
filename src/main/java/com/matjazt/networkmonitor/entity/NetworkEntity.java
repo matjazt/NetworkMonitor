@@ -56,10 +56,10 @@ public class NetworkEntity {
     private String emailAddress;
 
     /**
-     * If there's an active alarm for this device, when it was triggered.
+     * If there's an active alarm for this network, references the alarm ID.
      */
-    @Column(name = "active_alarm_time", nullable = true, columnDefinition = "TIMESTAMP")
-    private LocalDateTime activeAlarmTime;
+    @Column(name = "active_alarm_id", nullable = true)
+    private Long activeAlarmId;
 
     // JPA requires a no-argument constructor
     public NetworkEntity() {
@@ -115,18 +115,18 @@ public class NetworkEntity {
     }
 
     public String getEmailAddress() {
-        return emailAddress;
+        return emailAddress != null ? emailAddress.trim() : null;
     }
 
     public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
+        this.emailAddress = emailAddress != null ? emailAddress.trim() : null;
     }
 
-    public LocalDateTime getActiveAlarmTime() {
-        return activeAlarmTime;
+    public Long getActiveAlarmId() {
+        return activeAlarmId;
     }
 
-    public void setActiveAlarmTime(LocalDateTime activeAlarmTime) {
-        this.activeAlarmTime = activeAlarmTime;
+    public void setActiveAlarmId(Long activeAlarmId) {
+        this.activeAlarmId = activeAlarmId;
     }
 }

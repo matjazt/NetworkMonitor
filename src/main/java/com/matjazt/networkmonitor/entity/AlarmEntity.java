@@ -74,8 +74,14 @@ public class AlarmEntity {
     /**
      * Human-readable alarm message.
      */
-    @Column(name = "message", nullable = false, length = 500)
+    @Column(name = "message", nullable = true, length = 500)
     private String message;
+
+    /**
+     * When this alarm was closed/resolved (optional).
+     */
+    @Column(name = "closure_timestamp", nullable = true, columnDefinition = "TIMESTAMP")
+    private LocalDateTime closureTimestamp;
 
     // JPA requires no-arg constructor
     public AlarmEntity() {
@@ -138,5 +144,13 @@ public class AlarmEntity {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public LocalDateTime getClosureTimestamp() {
+        return closureTimestamp;
+    }
+
+    public void setClosureTimestamp(LocalDateTime closureTimestamp) {
+        this.closureTimestamp = closureTimestamp;
     }
 }

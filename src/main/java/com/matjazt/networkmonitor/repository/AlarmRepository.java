@@ -1,6 +1,7 @@
 package com.matjazt.networkmonitor.repository;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import com.matjazt.networkmonitor.entity.AlarmEntity;
@@ -40,7 +41,7 @@ public class AlarmRepository {
     public AlarmEntity createAlarm(NetworkEntity network, DeviceEntity device,
             AlarmType alarmType, String message) {
         AlarmEntity alarm = new AlarmEntity(
-                LocalDateTime.now(),
+                LocalDateTime.now(ZoneOffset.UTC),
                 network,
                 device,
                 alarmType,
@@ -105,5 +106,16 @@ public class AlarmRepository {
         } else {
             return getLatestAlarmForDevice(network, device);
         }
+    }
+
+    /**
+     * Get an alarm by its ID.
+     * 
+     * @param id The alarm ID
+     * @return The alarm, or empty if not found
+     */
+    public Optional<AlarmEntity> getAlarmById(Long id) {
+        AlarmEntity alarm = entityManager.find(AlarmEntity.class, id);
+        return Optional.ofNullable(alarm);
     }
 }

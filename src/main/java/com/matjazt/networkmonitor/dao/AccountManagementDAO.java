@@ -1,6 +1,7 @@
 package com.matjazt.networkmonitor.dao;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -104,7 +105,7 @@ public class AccountManagementDAO {
      * Update the account's last_seen timestamp.
      */
     public void updateLastSeen(AccountEntity account) {
-        account.setLastSeen(LocalDateTime.now());
+        account.setLastSeen(LocalDateTime.now(ZoneOffset.UTC));
         em.merge(account);
     }
 

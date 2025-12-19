@@ -95,10 +95,10 @@ public class DeviceEntity {
     private LocalDateTime lastSeen;
 
     /**
-     * If there's an active alarm for this device, when it was triggered.
+     * If there's an active alarm for this device, references the alarm ID.
      */
-    @Column(name = "active_alarm_time", nullable = true, columnDefinition = "TIMESTAMP")
-    private LocalDateTime activeAlarmTime;
+    @Column(name = "active_alarm_id", nullable = true)
+    private Long activeAlarmId;
 
     // JPA requires no-arg constructor
     public DeviceEntity() {
@@ -133,6 +133,13 @@ public class DeviceEntity {
 
     public String getName() {
         return name;
+    }
+
+    public String getNameOrMac() {
+        if (name != null && !name.isBlank()) {
+            return name;
+        }
+        return macAddress;
     }
 
     public void setName(String name) {
@@ -191,12 +198,12 @@ public class DeviceEntity {
         this.lastSeen = LocalDateTime.now(ZoneOffset.UTC);
     }
 
-    public LocalDateTime getActiveAlarmTime() {
-        return activeAlarmTime;
+    public Long getActiveAlarmId() {
+        return activeAlarmId;
     }
 
-    public void setActiveAlarmTime(LocalDateTime activeAlarmTime) {
-        this.activeAlarmTime = activeAlarmTime;
+    public void setActiveAlarmId(Long activeAlarmId) {
+        this.activeAlarmId = activeAlarmId;
     }
 
 }

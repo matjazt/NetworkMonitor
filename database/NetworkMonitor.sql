@@ -52,3 +52,67 @@ alter TABLE network
 drop column alertingdelay;
 
 insert into account_type (id, name, description) values (1, 'admin', 'administrator'), (2, 'user', 'ordinary user'), (3, 'device', 'montoring device')
+
+
+
+-- Create operation_mode reference table with zero-based IDs
+CREATE TABLE device_operation_mode (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT
+);
+
+-- Insert operation modes with zero-based IDs matching enum ordinals
+INSERT INTO device_operation_mode (id, name, description) VALUES
+    (0, 'NOT_ALLOWED', 'Device is not allowed on the network'),
+    (1, 'ALLOWED', 'Device is allowed but not monitored'),
+    (2, 'ALWAYS_ON', 'Device should always be online and is monitored');
+
+
+update device set device_operation_mode_id = device_operation_mode_id -1
+
+ALTER TABLE device 
+ADD CONSTRAINT fk_device_device_operation_mode 
+FOREIGN KEY (device_operation_mode_id) REFERENCES device_operation_mode(id);
+
+
+ALTER TABLE account 
+ADD CONSTRAINT fk_account_account_type 
+FOREIGN KEY (account_type_id) REFERENCES account_type (id);
+
+
+-- Step 1: Create alarm_type reference table with zero-based IDs matching enum ordinals
+CREATE TABLE alarm_type (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT
+);
+
+-- Step 2: Insert the three alarm types with zero-based IDs matching enum
+INSERT INTO alarm_type (id, name, description) VALUES
+    (0, 'NETWORK_DOWN', 'Network connectivity lost or network went offline'),
+    (1, 'DEVICE_DOWN', 'Device that should always be online is not responding'),
+    (2, 'DEVICE_NOT_ALLOWED', 'Unauthorized device detected on the network');
+
+-- Step 3: Create alarm table
+CREATE TABLE alarm (
+    id BIGSERIAL PRIMARY KEY,
+    timestamp TIMESTAMP NOT NULL,
+    network_id BIGINT NOT NULL,
+    device_id BIGINT,
+    alarm_type_id INTEGER NOT NULL,
+    message VARCHAR(500) NOT NULL,
+    CONSTRAINT fk_alarm_network FOREIGN KEY (network_id) REFERENCES network(id),
+    CONSTRAINT fk_alarm_device FOREIGN KEY (device_id) REFERENCES device(id),
+    CONSTRAINT fk_alarm_type FOREIGN KEY (alarm_type_id) REFERENCES alarm_type(id)
+);
+
+-- Step 4: Create indexes for better query performance
+CREATE INDEX idx_alarm_network ON alarm(network_id);
+CREATE INDEX idx_alarm_device ON alarm(device_id);
+CREATE INDEX idx_alarm_timestamp ON alarm(timestamp);
+
+
+ALTER TABLE alarm
+  ADD CONSTRAINT fk_alarm_alarm_type
+  FOREIGN KEY (alarm_type_id) REFERENCES alarm_type(id);

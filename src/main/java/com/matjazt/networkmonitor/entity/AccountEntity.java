@@ -1,6 +1,7 @@
 package com.matjazt.networkmonitor.entity;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 
 import jakarta.persistence.Column;
@@ -59,13 +60,13 @@ public class AccountEntity {
         this.passwordHash = passwordHash;
         this.fullName = fullName;
         this.email = email;
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+            createdAt = LocalDateTime.now(ZoneOffset.UTC);
         }
     }
 

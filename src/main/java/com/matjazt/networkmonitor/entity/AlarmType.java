@@ -7,5 +7,5 @@ package com.matjazt.networkmonitor.entity;
 public enum AlarmType {
     NETWORK_DOWN, // ordinal = 0
     DEVICE_DOWN, // ordinal = 1
-    DEVICE_NOT_ALLOWED; // ordinal = 2
+    UNAUTHORIZED_DEVICE; // ordinal = 2
 }

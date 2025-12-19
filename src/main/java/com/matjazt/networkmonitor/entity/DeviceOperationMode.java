@@ -5,7 +5,7 @@ package com.matjazt.networkmonitor.entity;
  * Ordinal values match operation_mode.id in database for referential integrity.
  */
 public enum DeviceOperationMode {
-    NOT_ALLOWED, // ordinal = 0
+    UNAUTHORIZED, // ordinal = 0
     ALLOWED, // ordinal = 1
     ALWAYS_ON; // ordinal = 2
 }

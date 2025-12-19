@@ -3,15 +3,20 @@ package com.matjazt.networkmonitor.service;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.matjazt.networkmonitor.config.ConfigProvider;
+import com.matjazt.networkmonitor.entity.AlarmEntity;
+import com.matjazt.networkmonitor.entity.AlarmType;
 import com.matjazt.networkmonitor.entity.DeviceEntity;
 import com.matjazt.networkmonitor.entity.DeviceOperationMode;
 import com.matjazt.networkmonitor.entity.NetworkEntity;
+import com.matjazt.networkmonitor.repository.AlarmRepository;
 import com.matjazt.networkmonitor.repository.DeviceRepository;
 import com.matjazt.networkmonitor.repository.DeviceStatusRepository;
 import com.matjazt.networkmonitor.repository.NetworkRepository;
@@ -33,6 +38,8 @@ import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 
 @Singleton
@@ -47,6 +54,9 @@ public class AlerterService {
     @Inject
     private ConfigProvider config;
 
+    @PersistenceContext(unitName = "NetworkMonitorPU")
+    private EntityManager entityManager;
+
     @Inject
     private NetworkRepository networkRepository;
 
@@ -54,7 +64,15 @@ public class AlerterService {
     private DeviceRepository deviceRepository;
 
     @Inject
+    private AlarmRepository alarmRepository;
+
+    @Inject
     private DeviceStatusRepository deviceStatusRepository;
+
+    private static final Map<AlarmType, String> ALARM_TYPE_MESSAGES = Map.ofEntries(
+            Map.entry(AlarmType.NETWORK_DOWN, "Network is unavailable"),
+            Map.entry(AlarmType.DEVICE_DOWN, "Device is offline"),
+            Map.entry(AlarmType.UNAUTHORIZED_DEVICE, "Unauthorized device detected"));
 
     /**
      * Called automatically after dependency injection completes.
@@ -90,29 +108,149 @@ public class AlerterService {
         LOGGER.info("shutting down...");
     }
 
-    public void sendAlert(String message, NetworkEntity network, DeviceEntity device) {
+    public void sendAlert(AlarmType alarmType, boolean closure, NetworkEntity network, DeviceEntity device,
+            String message) {
+
+        String baseMessage = ALARM_TYPE_MESSAGES.get(alarmType);
+        if (baseMessage == null) {
+            throw new IllegalArgumentException("Unsupported alarm type: " + alarmType);
+        }
+
+        var subject = "[" + network.getName() + "] ";
+
+        var fullMessageEntries = new ArrayList<String>();
+
+        if (closure) {
+            fullMessageEntries.add("ALERT CLOSED");
+            subject += " alert closure";
+        } else {
+            fullMessageEntries.add("ALERT TRIGGERED");
+            subject += " alert";
+        }
+        fullMessageEntries.add(""); // empty line
+
         if (network != null) {
-            message += "\nNetwork: " + network.getName();
+            fullMessageEntries.add("Network: " + network.getName());
         }
 
         if (device != null) {
-            message += "\nDevice: " + device.getName() + " (mac:" + device.getMacAddress() + ", ip:"
-                    + device.getIpAddress() + ")";
+            fullMessageEntries.add("Device: " + device.getName() + " (mac:" + device.getMacAddress() + ", ip:"
+                    + device.getIpAddress() + ")");
+        }
+        fullMessageEntries.add("UTC time: " + LocalDateTime.now(ZoneOffset.UTC).toString());
+        fullMessageEntries.add(""); // empty line
+
+        fullMessageEntries.add(baseMessage + ".");
+
+        if (message != null && !message.isBlank()) {
+            fullMessageEntries.add(""); // empty line
+            fullMessageEntries.add("Additional info: " + message);
         }
 
-        LOGGER.warn("ALERT: {}", message);
+        var fullMessage = String.join(System.lineSeparator(), fullMessageEntries);
+        LOGGER.warn("fullMessage: {}", fullMessage);
 
         // Send email if network has an email address configured
-        if (network != null && network.getEmailAddress() != null && !network.getEmailAddress().trim().isEmpty()) {
+        if (network != null && network.getEmailAddress() != null && !network.getEmailAddress().isEmpty()) {
+            // figure out email subject
+
+            if (device != null) {
+                subject += " for device: " + device.getNameOrMac();
+            }
+
             try {
-                // TODO: subject could be a parameter
-                sendEmail(network.getEmailAddress(), "[" + network.getName() + "] network alert", message.toString());
+                sendEmail(network.getEmailAddress(), subject, fullMessage);
                 LOGGER.info("Alert email sent to: {}", network.getEmailAddress());
             } catch (Exception e) {
                 LOGGER.error("Failed to send alert email", e);
                 throw new RuntimeException("Failed to send alert email to " + network.getEmailAddress(), e);
             }
         }
+    }
+
+    public AlarmEntity openAlert(AlarmType alarmType, NetworkEntity network, DeviceEntity device, String message) {
+
+        LOGGER.info("alarmType={}, network={}, device={}, message={}",
+                alarmType, network.getName(),
+                device != null ? device.getNameOrMac() : "N/A",
+                message);
+
+        // load latest alarm for this network/device and check if it's closed
+        var latestAlarmOpt = alarmRepository.getLatestAlarm(network, device);
+        if (latestAlarmOpt.isPresent() && latestAlarmOpt.get().getClosureTimestamp() == null) {
+            throw new IllegalStateException("There's already an open alarm for this network/device");
+        }
+
+        // store alarm in database
+        var alarm = alarmRepository.createAlarm(
+                network,
+                device,
+                alarmType,
+                message);
+
+        // ensure INSERT is executed and ID is available
+        // entityManager.flush();
+
+        // store it also in the entity
+        if (device == null) {
+            network.setActiveAlarmId(alarm.getId());
+            networkRepository.save(network);
+        } else {
+            device.setActiveAlarmId(alarm.getId());
+            deviceRepository.save(device);
+        }
+
+        // send alert notification
+        sendAlert(alarmType, false, network, device, message);
+
+        // return created alarm (including its ID)
+        return alarm;
+    }
+
+    public AlarmEntity closeAlert(NetworkEntity network, DeviceEntity device, String message) {
+
+        LOGGER.info("network={}, device={}, message={}",
+                network.getName(),
+                device != null ? device.getNameOrMac() : "N/A",
+                message);
+
+        // load latest alarm for this network/device and check if it's closed
+        var latestAlarmOpt = alarmRepository.getLatestAlarm(network, device);
+        if (!latestAlarmOpt.isPresent() || latestAlarmOpt.get().getClosureTimestamp() != null) {
+            throw new IllegalStateException("There's no open alarm for this network/device");
+        }
+
+        var alarm = latestAlarmOpt.get();
+
+        // close alarm in database
+        alarm.setClosureTimestamp(LocalDateTime.now(ZoneOffset.UTC));
+        alarmRepository.save(alarm);
+
+        // close it also in the entity
+        if (device == null) {
+            network.setActiveAlarmId(null);
+            networkRepository.save(network);
+        } else {
+            device.setActiveAlarmId(null);
+            deviceRepository.save(device);
+        }
+
+        // append the information about the alarm we are closing to the message: alarm
+        // timestamp and duration
+        var duration = java.time.Duration.between(alarm.getTimestamp(), alarm.getClosureTimestamp());
+        String durationInfo = "Alert opened at: " + alarm.getTimestamp().toString() + "\nDuration: "
+                + String.format("%d days, %d hours, %d minutes, %d seconds",
+                        duration.toDaysPart(),
+                        duration.toHoursPart(),
+                        duration.toMinutesPart(),
+                        duration.toSecondsPart());
+        message = (message != null ? message.trim() : "") + "\n" + durationInfo;
+
+        // send alert notification
+        sendAlert(alarm.getAlarmType(), true, network, device, message);
+
+        // return closed alarm
+        return alarm;
     }
 
     /**
@@ -186,69 +324,53 @@ public class AlerterService {
 
         if (network.getLastSeen().isBefore(alertingThreshold)) {
             // network is down
-            if (network.getActiveAlarmTime() == null || network.getActiveAlarmTime().isBefore(network.getLastSeen())) {
+            if (network.getActiveAlarmId() == null) {
                 // network is down, alert hasn't been sent yet
-                sendAlert("Network appears to be down!", network, null);
-                network.setActiveAlarmTime(now);
-                networkRepository.save(network);
+                openAlert(AlarmType.NETWORK_DOWN, network, null, null);
             }
             // there's nothing else to do if the entire network is down
             return;
         }
 
         // network is up
-        if (network.getActiveAlarmTime() != null) {
+        if (network.getActiveAlarmId() != null) {
             // network was down, now it's back up - send recovery alert
-            sendAlert("Network is back online.", network, null);
-            network.setActiveAlarmTime(null);
-            networkRepository.save(network);
+            closeAlert(network, null, null);
         }
 
         // now check individual devices
         for (DeviceEntity device : deviceRepository.findAllForNetwork(network.getId())) {
 
-            if (device.getDeviceOperationMode() == DeviceOperationMode.NOT_ALLOWED) {
+            if (device.getDeviceOperationMode() == DeviceOperationMode.UNAUTHORIZED) {
                 // the device is not allowed on the network
                 // alerts for such cases are sent when the device first appears, so here we can
                 // just check if it's gone
-                if (device.getActiveAlarmTime() != null && device.getLastSeen().isBefore(alertingThreshold)) {
+                if (device.getActiveAlarmId() != null && device.getLastSeen().isBefore(alertingThreshold)) {
                     // device is gone, clear alarm
-                    sendAlert("Unauthorized device is no longer detected on the network.", network, device);
-                    device.setActiveAlarmTime(null);
-                    deviceRepository.save(device);
+                    closeAlert(network, device, null);
                 }
             } else if (device.getDeviceOperationMode() == DeviceOperationMode.ALLOWED) {
                 // the device is allowed, no alerts needed, but we can clear any active alarms
-                // in case they were set before (e.g., if the device was previously NOT_ALLOWED)
-                if (device.getActiveAlarmTime() != null) {
-                    sendAlert(
-                            "Allowed device alarm cleared (it was previously not allowed or always on, hence the alarm).",
-                            network, device);
-                    device.setActiveAlarmTime(null);
-                    deviceRepository.save(device);
+                // in case they were set before (e.g., if the device was previously
+                // UNAUTHORIZED)
+                if (device.getActiveAlarmId() != null) {
+                    closeAlert(network, device, "device is now authorized");
                 }
             } else if (device.getDeviceOperationMode() == DeviceOperationMode.ALWAYS_ON) {
                 // the device should always be online, check its status
                 if (device.getLastSeen().isBefore(alertingThreshold)) {
-                    // device is down
-                    if (device.getActiveAlarmTime() == null
-                            || device.getActiveAlarmTime().isBefore(device.getLastSeen())) {
-                        // device is down, alert hasn't been sent yet
-                        sendAlert("Device appears to be down!", network, device);
-                        device.setActiveAlarmTime(now);
-                        deviceRepository.save(device);
+                    // device is down, alert hasn't been sent yet
+                    if (device.getActiveAlarmId() == null) {
+                        openAlert(AlarmType.DEVICE_DOWN, network, device, null);
                     }
                 } else {
                     // device is up
-                    if (device.getActiveAlarmTime() != null
+                    if (device.getActiveAlarmId() != null
                             && deviceStatusRepository.findLatestByMacAddress(network, device.getMacAddress())
                                     .getTimestamp().isBefore(alertingThreshold)) {
                         // device was down, now it's back up and has been up for long enough - send
                         // recovery alert
-
-                        sendAlert("Device is back online.", network, device);
-                        device.setActiveAlarmTime(null);
-                        deviceRepository.save(device);
+                        closeAlert(network, device, null);
                     }
                 }
             }
