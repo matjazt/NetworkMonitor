@@ -11,15 +11,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.matjazt.networkmonitor.config.ConfigProvider;
+import com.matjazt.networkmonitor.dao.AlertingDAO;
+import com.matjazt.networkmonitor.dao.MonitoringDAO;
 import com.matjazt.networkmonitor.entity.AlertEntity;
 import com.matjazt.networkmonitor.entity.AlertType;
 import com.matjazt.networkmonitor.entity.DeviceEntity;
 import com.matjazt.networkmonitor.entity.DeviceOperationMode;
 import com.matjazt.networkmonitor.entity.NetworkEntity;
-import com.matjazt.networkmonitor.repository.AlertRepository;
-import com.matjazt.networkmonitor.repository.DeviceRepository;
-import com.matjazt.networkmonitor.repository.DeviceStatusRepository;
-import com.matjazt.networkmonitor.repository.NetworkRepository;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -58,16 +56,11 @@ public class AlerterService {
     private EntityManager entityManager;
 
     @Inject
-    private NetworkRepository networkRepository;
+    private AlertingDAO alertingDao;
 
     @Inject
-    private DeviceRepository deviceRepository;
+    private MonitoringDAO monitoringDao;
 
-    @Inject
-    private AlertRepository alertRepository;
-
-    @Inject
-    private DeviceStatusRepository deviceStatusRepository;
 
     private static final Map<AlertType, String> ALERT_TYPE_MESSAGES = Map.ofEntries(
             Map.entry(AlertType.NETWORK_DOWN, "Network is unavailable"),
@@ -182,13 +175,13 @@ public class AlerterService {
                 message);
 
         // load latest alert for this network/device and check if it's closed
-        var latestAlertOpt = alertRepository.getLatestAlert(network, device);
+        var latestAlertOpt = alertingDao.getLatestAlert(network, device);
         if (latestAlertOpt.isPresent() && latestAlertOpt.get().getClosureTimestamp() == null) {
             throw new IllegalStateException("There's already an open alert for this network/device");
         }
 
         // store alert in database
-        var alert = alertRepository.createAlert(
+        var alert = alertingDao.createAlert(
                 network,
                 device,
                 alertType,
@@ -200,10 +193,10 @@ public class AlerterService {
         // store it also in the entity
         if (device == null) {
             network.setActiveAlertId(alert.getId());
-            networkRepository.save(network);
+            monitoringDao.save(network);
         } else {
             device.setActiveAlertId(alert.getId());
-            deviceRepository.save(device);
+            monitoringDao.save(device);
         }
 
         // send alert notification
@@ -221,7 +214,7 @@ public class AlerterService {
                 message);
 
         // load latest alert for this network/device and check if it's closed
-        var latestAlertOpt = alertRepository.getLatestAlert(network, device);
+        var latestAlertOpt = alertingDao.getLatestAlert(network, device);
         if (!latestAlertOpt.isPresent() || latestAlertOpt.get().getClosureTimestamp() != null) {
             throw new IllegalStateException("There's no open alert for this network/device");
         }
@@ -230,15 +223,15 @@ public class AlerterService {
 
         // close alert in database
         alert.setClosureTimestamp(LocalDateTime.now(ZoneOffset.UTC));
-        alertRepository.save(alert);
+        alertingDao.save(alert);
 
         // close it also in the entity
         if (device == null) {
             network.setActiveAlertId(null);
-            networkRepository.save(network);
+            monitoringDao.save(network);
         } else {
             device.setActiveAlertId(null);
-            deviceRepository.save(device);
+            monitoringDao.save(device);
         }
 
         // append the information about the alert we are closing to the message: alert
@@ -314,7 +307,7 @@ public class AlerterService {
         LOGGER.info("Running scheduled alert task...");
 
         // process networks one by one
-        for (NetworkEntity network : networkRepository.findAll()) {
+        for (NetworkEntity network : monitoringDao.findAll()) {
             processNetworkAlerts(network);
         }
 
@@ -345,7 +338,7 @@ public class AlerterService {
         }
 
         // now check individual devices
-        for (DeviceEntity device : deviceRepository.findAllForNetwork(network.getId())) {
+        for (DeviceEntity device : monitoringDao.findAllForNetwork(network.getId())) {
 
             if (device.getDeviceOperationMode() == DeviceOperationMode.UNAUTHORIZED) {
                 // the device is not allowed on the network
@@ -372,7 +365,7 @@ public class AlerterService {
                 } else {
                     // device is up
                     if (device.getActiveAlertId() != null
-                            && deviceStatusRepository.findLatestByDevice(network, device)
+                            && monitoringDao.findLatestByDevice(network, device)
                                     .getTimestamp().isBefore(alertingThreshold)) {
                         // device was down, now it's back up and has been up for long enough - send
                         // recovery alert

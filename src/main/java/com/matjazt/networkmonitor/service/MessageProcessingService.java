@@ -8,15 +8,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.matjazt.networkmonitor.dao.MonitoringDAO;
 import com.matjazt.networkmonitor.entity.AlertType;
 import com.matjazt.networkmonitor.entity.DeviceEntity;
 import com.matjazt.networkmonitor.entity.DeviceOperationMode;
 import com.matjazt.networkmonitor.entity.DeviceStatusHistoryEntity;
 import com.matjazt.networkmonitor.entity.NetworkEntity;
 import com.matjazt.networkmonitor.model.NetworkStatusMessage;
-import com.matjazt.networkmonitor.repository.DeviceRepository;
-import com.matjazt.networkmonitor.repository.DeviceStatusRepository;
-import com.matjazt.networkmonitor.repository.NetworkRepository;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -40,13 +38,7 @@ public class MessageProcessingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageProcessingService.class);
 
     @Inject
-    private NetworkRepository networkRepository;
-
-    @Inject
-    private DeviceRepository deviceRepository;
-
-    @Inject
-    private DeviceStatusRepository deviceStatusRepository;
+    private MonitoringDAO monitoringDao;
 
     @Inject
     private AlerterService alerterService;
@@ -72,7 +64,7 @@ public class MessageProcessingService {
             // Get or create network record
             NetworkEntity network = getOrCreateNetwork(networkName);
             network.setLastSeen(messageTimestamp);
-            networkRepository.save(network);
+            monitoringDao.save(network);
 
             /*
              * // Get list of currently online MACs from message
@@ -83,10 +75,10 @@ public class MessageProcessingService {
              */
 
             // load all devices from the device repository for this network
-            var knownDevices = deviceRepository.findAllForNetwork(network.getId());
+            var knownDevices = monitoringDao.findAllForNetwork(network.getId());
 
             // load all previously online devices for this network
-            var previouslyOnlineDevices = deviceStatusRepository.findCurrentlyOnline(network);
+            var previouslyOnlineDevices = monitoringDao.findCurrentlyOnline(network);
 
             List<Long> processedDevices = new ArrayList<>();
 
@@ -124,7 +116,7 @@ public class MessageProcessingService {
                     device.setFirstSeen(messageTimestamp);
                     device.setLastSeen(messageTimestamp);
                     // persist the new device before using it in the alert
-                    deviceRepository.save(device);
+                    monitoringDao.save(device);
 
                     alerterService.openAlert(AlertType.UNAUTHORIZED_DEVICE, network, device,
                             "device detected for the first time");
@@ -148,7 +140,7 @@ public class MessageProcessingService {
                                 "device was seen before");
                     } else {
                         // openAlert saves the device, so only save if no alert was opened
-                        deviceRepository.save(device);
+                        monitoringDao.save(device);
                     }
 
                     // check last known status - search in previouslyOnlineDevices
@@ -176,7 +168,7 @@ public class MessageProcessingService {
                 if (shouldRecord) {
                     DeviceStatusHistoryEntity status = new DeviceStatusHistoryEntity(
                             network, device, ip, true, messageTimestamp);
-                    deviceStatusRepository.save(status);
+                    monitoringDao.save(status);
                 }
 
             }
@@ -192,7 +184,7 @@ public class MessageProcessingService {
 
                 // in all cases, update device's current online status and last seen
                 knownDevice.setOnline(false);
-                deviceRepository.save(knownDevice);
+                monitoringDao.save(knownDevice);
 
                 // check if the device was previously online
                 var lastOnlineStatus = previouslyOnlineDevices.stream()
@@ -208,7 +200,7 @@ public class MessageProcessingService {
                             network, knownDevice,
                             ip,
                             false, messageTimestamp);
-                    deviceStatusRepository.save(offlineStatus);
+                    monitoringDao.save(offlineStatus);
                 }
             }
 
@@ -254,10 +246,10 @@ public class MessageProcessingService {
      * Get existing network or create a new one.
      */
     private NetworkEntity getOrCreateNetwork(String networkName) {
-        return networkRepository.findByName(networkName)
+        return monitoringDao.findByName(networkName)
                 .orElseGet(() -> {
                     NetworkEntity newNetwork = new NetworkEntity(networkName);
-                    return networkRepository.save(newNetwork);
+                    return monitoringDao.save(newNetwork);
                 });
     }
 

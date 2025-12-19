@@ -12,10 +12,9 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import com.matjazt.networkmonitor.dao.MonitoringDAO;
 import com.matjazt.networkmonitor.entity.DeviceStatusHistoryEntity;
 import com.matjazt.networkmonitor.entity.NetworkEntity;
-import com.matjazt.networkmonitor.repository.DeviceStatusRepository;
-import com.matjazt.networkmonitor.repository.NetworkRepository;
 import com.matjazt.networkmonitor.security.AccountPrincipal;
 
 import jakarta.inject.Inject;
@@ -45,10 +44,7 @@ public class NetworkResource {
     private static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @Inject
-    private NetworkRepository networkRepository;
-
-    @Inject
-    private DeviceStatusRepository deviceStatusRepository;
+    private MonitoringDAO monitoringDao;
 
     @jakarta.ws.rs.core.Context
     private jakarta.ws.rs.core.SecurityContext securityContext;
@@ -67,7 +63,7 @@ public class NetworkResource {
             @APIResponse(responseCode = "200", description = "Successfully retrieved networks", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
     public Response getNetworks() {
-        List<NetworkEntity> networks = networkRepository.findAll();
+        List<NetworkEntity> networks = monitoringDao.findAll();
 
         // Convert entities to DTOs (Data Transfer Objects)
         // We don't expose entities directly to avoid over-fetching and
@@ -103,7 +99,7 @@ public class NetworkResource {
     public Response getOnlineDevices(
             @Parameter(description = "Name of the network", required = true, example = "MaliGrdi") @PathParam("networkName") String networkName) {
         // Find the network
-        Optional<NetworkEntity> networkOpt = networkRepository.findByName(networkName);
+        Optional<NetworkEntity> networkOpt = monitoringDao.findByName(networkName);
 
         if (networkOpt.isEmpty()) {
             // Return 404 Not Found if network doesn't exist
@@ -115,7 +111,7 @@ public class NetworkResource {
         NetworkEntity network = networkOpt.get();
 
         // Get currently online devices
-        List<DeviceStatusHistoryEntity> onlineDevices = deviceStatusRepository.findCurrentlyOnline(network);
+        List<DeviceStatusHistoryEntity> onlineDevices = monitoringDao.findCurrentlyOnline(network);
 
         // Convert to DTOs
         List<Map<String, Object>> deviceDtos = onlineDevices.stream()

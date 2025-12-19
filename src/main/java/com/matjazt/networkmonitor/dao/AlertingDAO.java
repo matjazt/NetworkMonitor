@@ -1,4 +1,4 @@
-package com.matjazt.networkmonitor.repository;
+package com.matjazt.networkmonitor.dao;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -18,7 +18,7 @@ import jakarta.persistence.PersistenceContext;
  * Repository for managing alert records.
  */
 @Stateless
-public class AlertRepository {
+public class AlertingDAO {
 
     @PersistenceContext(unitName = "NetworkMonitorPU")
     private EntityManager entityManager;
