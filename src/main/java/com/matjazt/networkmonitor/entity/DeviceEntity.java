@@ -95,10 +95,10 @@ public class DeviceEntity {
     private LocalDateTime lastSeen;
 
     /**
-     * If there's an active alarm for this device, references the alarm ID.
+     * If there's an active alert for this device, references the alert ID.
      */
-    @Column(name = "active_alarm_id", nullable = true)
-    private Long activeAlarmId;
+    @Column(name = "active_alert_id", nullable = true)
+    private Long activeAlertId;
 
     // JPA requires no-arg constructor
     public DeviceEntity() {
@@ -198,12 +198,12 @@ public class DeviceEntity {
         this.lastSeen = LocalDateTime.now(ZoneOffset.UTC);
     }
 
-    public Long getActiveAlarmId() {
-        return activeAlarmId;
+    public Long getActiveAlertId() {
+        return activeAlertId;
     }
 
-    public void setActiveAlarmId(Long activeAlarmId) {
-        this.activeAlarmId = activeAlarmId;
+    public void setActiveAlertId(Long activeAlertId) {
+        this.activeAlertId = activeAlertId;
     }
 
 }

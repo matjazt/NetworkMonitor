@@ -1,10 +1,10 @@
 package com.matjazt.networkmonitor.entity;
 
 /**
- * Enum representing alarm types.
- * Ordinal values match alarm_type.id in database for referential integrity.
+ * Enum representing alert types.
+ * Ordinal values match alert_type.id in database for referential integrity.
  */
-public enum AlarmType {
+public enum AlertType {
     NETWORK_DOWN, // ordinal = 0
     DEVICE_DOWN, // ordinal = 1
     UNAUTHORIZED_DEVICE; // ordinal = 2

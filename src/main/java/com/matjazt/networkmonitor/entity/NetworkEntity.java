@@ -56,10 +56,10 @@ public class NetworkEntity {
     private String emailAddress;
 
     /**
-     * If there's an active alarm for this network, references the alarm ID.
+     * If there's an active alert for this network, references the alert ID.
      */
-    @Column(name = "active_alarm_id", nullable = true)
-    private Long activeAlarmId;
+    @Column(name = "active_alert_id", nullable = true)
+    private Long activeAlertId;
 
     // JPA requires a no-argument constructor
     public NetworkEntity() {
@@ -122,11 +122,11 @@ public class NetworkEntity {
         this.emailAddress = emailAddress != null ? emailAddress.trim() : null;
     }
 
-    public Long getActiveAlarmId() {
-        return activeAlarmId;
+    public Long getActiveAlertId() {
+        return activeAlertId;
     }
 
-    public void setActiveAlarmId(Long activeAlarmId) {
-        this.activeAlarmId = activeAlarmId;
+    public void setActiveAlertId(Long activeAlertId) {
+        this.activeAlertId = activeAlertId;
     }
 }

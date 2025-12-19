@@ -16,83 +16,83 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 /**
- * JPA Entity representing an alarm (alert) in the system.
+ * JPA Entity representing an alert (alert) in the system.
  * 
- * Alarms are triggered when networks or devices go down, or when
+ * Alerts are triggered when networks or devices go down, or when
  * unauthorized devices are detected.
  */
 @Entity
-@Table(name = "alarm", indexes = {
-        @Index(name = "idx_alarm_network", columnList = "network_id"),
-        @Index(name = "idx_alarm_device", columnList = "device_id"),
-        @Index(name = "idx_alarm_timestamp", columnList = "timestamp")
+@Table(name = "alert", indexes = {
+        @Index(name = "idx_alert_network", columnList = "network_id"),
+        @Index(name = "idx_alert_device", columnList = "device_id"),
+        @Index(name = "idx_alert_timestamp", columnList = "timestamp")
 })
-public class AlarmEntity {
+public class AlertEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
-     * When this alarm was triggered.
+     * When this alert was triggered.
      */
     @Column(name = "timestamp", nullable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime timestamp;
 
     /**
-     * The network this alarm is associated with.
+     * The network this alert is associated with.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "network_id", nullable = false)
     private NetworkEntity network;
 
     /**
-     * The device this alarm is associated with (optional).
-     * Null for network-level alarms.
+     * The device this alert is associated with (optional).
+     * Null for network-level alerts.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "device_id", nullable = true)
     private DeviceEntity device;
 
     /**
-     * The type of alarm.
-     * Stored as integer matching alarm_type.id for referential integrity.
+     * The type of alert.
+     * Stored as integer matching alert_type.id for referential integrity.
      */
-    @Column(name = "alarm_type_id", nullable = false)
+    @Column(name = "alert_type_id", nullable = false)
     @Enumerated(EnumType.ORDINAL)
-    private AlarmType alarmType;
+    private AlertType alertType;
 
     /**
-     * Reference to AlarmTypeEntity for OpenJPA foreign key validation only.
+     * Reference to AlertTypeEntity for OpenJPA foreign key validation only.
      * Not used in runtime code - insertable/updatable=false ensures enum field
      * controls the value.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "alarm_type_id", insertable = false, updatable = false)
-    private AlarmTypeEntity alarmTypeRef;
+    @JoinColumn(name = "alert_type_id", insertable = false, updatable = false)
+    private AlertTypeEntity alertTypeRef;
 
     /**
-     * Human-readable alarm message.
+     * Human-readable alert message.
      */
     @Column(name = "message", nullable = true, length = 500)
     private String message;
 
     /**
-     * When this alarm was closed/resolved (optional).
+     * When this alert was closed/resolved (optional).
      */
     @Column(name = "closure_timestamp", nullable = true, columnDefinition = "TIMESTAMP")
     private LocalDateTime closureTimestamp;
 
     // JPA requires no-arg constructor
-    public AlarmEntity() {
+    public AlertEntity() {
     }
 
-    public AlarmEntity(LocalDateTime timestamp, NetworkEntity network, DeviceEntity device,
-            AlarmType alarmType, String message) {
+    public AlertEntity(LocalDateTime timestamp, NetworkEntity network, DeviceEntity device,
+            AlertType alertType, String message) {
         this.timestamp = timestamp;
         this.network = network;
         this.device = device;
-        this.alarmType = alarmType;
+        this.alertType = alertType;
         this.message = message;
     }
 
@@ -130,12 +130,12 @@ public class AlarmEntity {
         this.device = device;
     }
 
-    public AlarmType getAlarmType() {
-        return alarmType;
+    public AlertType getAlertType() {
+        return alertType;
     }
 
-    public void setAlarmType(AlarmType alarmType) {
-        this.alarmType = alarmType;
+    public void setAlertType(AlertType alertType) {
+        this.alertType = alertType;
     }
 
     public String getMessage() {

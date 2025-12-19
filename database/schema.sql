@@ -14,7 +14,7 @@ CREATE TABLE device (
 	online bool NOT NULL,
 	network_id int8 NOT NULL,
 	allowed bool NULL,
-	active_alarm_time timestamp NULL,
+	active_alert_time timestamp NULL,
 	CONSTRAINT device_pkey PRIMARY KEY (id),
 	CONSTRAINT u_device_mac_address UNIQUE (mac_address)
 );

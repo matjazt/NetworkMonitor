@@ -10,7 +10,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.matjazt.networkmonitor.entity.AlarmType;
+import com.matjazt.networkmonitor.entity.AlertType;
 import com.matjazt.networkmonitor.entity.DeviceEntity;
 import com.matjazt.networkmonitor.entity.DeviceOperationMode;
 import com.matjazt.networkmonitor.entity.DeviceStatusHistoryEntity;
@@ -125,7 +125,7 @@ public class MessageProcessingService {
                     // persist the new device before using it in the alert
                     deviceRepository.save(newDevice);
 
-                    alerterService.openAlert(AlarmType.UNAUTHORIZED_DEVICE, network, newDevice,
+                    alerterService.openAlert(AlertType.UNAUTHORIZED_DEVICE, network, newDevice,
                             "device detected for the first time");
 
                     // also add to device history
@@ -141,9 +141,9 @@ public class MessageProcessingService {
 
                     // see if alert needs to be sent for unauthorized device
                     if (knownDevice.getDeviceOperationMode() == DeviceOperationMode.UNAUTHORIZED
-                            && knownDevice.getActiveAlarmId() == null) {
+                            && knownDevice.getActiveAlertId() == null) {
                         // device is not allowed and no alert has been sent yet
-                        alerterService.openAlert(AlarmType.UNAUTHORIZED_DEVICE, network, knownDevice,
+                        alerterService.openAlert(AlertType.UNAUTHORIZED_DEVICE, network, knownDevice,
                                 "device was seen before");
                     } else {
                         // openAlert saves the device, so only save if no alert was opened

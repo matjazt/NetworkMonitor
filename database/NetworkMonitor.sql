@@ -81,38 +81,38 @@ ADD CONSTRAINT fk_account_account_type
 FOREIGN KEY (account_type_id) REFERENCES account_type (id);
 
 
--- Step 1: Create alarm_type reference table with zero-based IDs matching enum ordinals
-CREATE TABLE alarm_type (
+-- Step 1: Create alert_type reference table with zero-based IDs matching enum ordinals
+CREATE TABLE alert_type (
     id INTEGER PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE,
     description TEXT
 );
 
--- Step 2: Insert the three alarm types with zero-based IDs matching enum
-INSERT INTO alarm_type (id, name, description) VALUES
+-- Step 2: Insert the three alert types with zero-based IDs matching enum
+INSERT INTO alert_type (id, name, description) VALUES
     (0, 'NETWORK_DOWN', 'Network connectivity lost or network went offline'),
     (1, 'DEVICE_DOWN', 'Device that should always be online is not responding'),
     (2, 'DEVICE_NOT_ALLOWED', 'Unauthorized device detected on the network');
 
--- Step 3: Create alarm table
-CREATE TABLE alarm (
+-- Step 3: Create alert table
+CREATE TABLE alert (
     id BIGSERIAL PRIMARY KEY,
     timestamp TIMESTAMP NOT NULL,
     network_id BIGINT NOT NULL,
     device_id BIGINT,
-    alarm_type_id INTEGER NOT NULL,
+    alert_type_id INTEGER NOT NULL,
     message VARCHAR(500) NOT NULL,
-    CONSTRAINT fk_alarm_network FOREIGN KEY (network_id) REFERENCES network(id),
-    CONSTRAINT fk_alarm_device FOREIGN KEY (device_id) REFERENCES device(id),
-    CONSTRAINT fk_alarm_type FOREIGN KEY (alarm_type_id) REFERENCES alarm_type(id)
+    CONSTRAINT fk_alert_network FOREIGN KEY (network_id) REFERENCES network(id),
+    CONSTRAINT fk_alert_device FOREIGN KEY (device_id) REFERENCES device(id),
+    CONSTRAINT fk_alert_type FOREIGN KEY (alert_type_id) REFERENCES alert_type(id)
 );
 
 -- Step 4: Create indexes for better query performance
-CREATE INDEX idx_alarm_network ON alarm(network_id);
-CREATE INDEX idx_alarm_device ON alarm(device_id);
-CREATE INDEX idx_alarm_timestamp ON alarm(timestamp);
+CREATE INDEX idx_alert_network ON alert(network_id);
+CREATE INDEX idx_alert_device ON alert(device_id);
+CREATE INDEX idx_alert_timestamp ON alert(timestamp);
 
 
-ALTER TABLE alarm
-  ADD CONSTRAINT fk_alarm_alarm_type
-  FOREIGN KEY (alarm_type_id) REFERENCES alarm_type(id);
+ALTER TABLE alert
+  ADD CONSTRAINT fk_alert_alert_type
+  FOREIGN KEY (alert_type_id) REFERENCES alert_type(id);

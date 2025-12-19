@@ -6,14 +6,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
- * JPA entity for alarm_type reference table.
+ * JPA entity for alert_type reference table.
  * This entity exists for OpenJPA schema validation and foreign key
  * relationships.
- * Runtime code uses AlarmType enum directly - this entity is never queried.
+ * Runtime code uses AlertType enum directly - this entity is never queried.
  */
 @Entity
-@Table(name = "alarm_type")
-public class AlarmTypeEntity {
+@Table(name = "alert_type")
+public class AlertTypeEntity {
 
     @Id
     @Column(name = "id")
