@@ -135,6 +135,13 @@ public class DeviceEntity {
         return name;
     }
 
+    public String getNameOrUnknown() {
+        if (name != null && !name.isBlank()) {
+            return name;
+        }
+        return "unknown";
+    }
+
     public String getNameOrMac() {
         if (name != null && !name.isBlank()) {
             return name;

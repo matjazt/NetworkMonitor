@@ -2,6 +2,7 @@ package com.matjazt.networkmonitor.repository;
 
 import java.util.List;
 
+import com.matjazt.networkmonitor.entity.DeviceEntity;
 import com.matjazt.networkmonitor.entity.DeviceStatusHistoryEntity;
 import com.matjazt.networkmonitor.entity.NetworkEntity;
 
@@ -35,22 +36,22 @@ public class DeviceStatusRepository {
                         "AND d.online = true " +
                         "AND d.timestamp = (" +
                         "  SELECT MAX(d2.timestamp) FROM DeviceStatusHistoryEntity d2 " +
-                        "  WHERE d2.network = :network AND d2.macAddress = d.macAddress" +
+                        "  WHERE d2.network = :network AND d2.device = d.device" +
                         ")",
                 DeviceStatusHistoryEntity.class)
                 .setParameter("network", network)
                 .getResultList();
     }
 
-    public DeviceStatusHistoryEntity findLatestByMacAddress(NetworkEntity network, String macAddress) {
+    public DeviceStatusHistoryEntity findLatestByDevice(NetworkEntity network, DeviceEntity device) {
         List<DeviceStatusHistoryEntity> results = em.createQuery(
                 "SELECT d FROM DeviceStatusHistoryEntity d " +
                         "WHERE d.network = :network " +
-                        "AND d.macAddress = :macAddress " +
+                        "AND d.device = :device " +
                         "ORDER BY d.id DESC",
                 DeviceStatusHistoryEntity.class)
                 .setParameter("network", network)
-                .setParameter("macAddress", macAddress)
+                .setParameter("device", device)
                 .setMaxResults(1)
                 .getResultList();
 

@@ -24,9 +24,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "device_status_history", indexes = {
         // Index for fast lookups by network
-        @Index(name = "idx_network_id", columnList = "network_id"),
-        // Index for finding current status of a device
-        @Index(name = "idx_mac_timestamp", columnList = "mac_address, timestamp")
+        @Index(name = "idx_network_id", columnList = "network_id")
 })
 public class DeviceStatusHistoryEntity {
 
@@ -46,10 +44,11 @@ public class DeviceStatusHistoryEntity {
     private NetworkEntity network;
 
     /**
-     * Device MAC address - permanent identifier for the device.
+     * The device this history entry is associated with.
      */
-    @Column(name = "mac_address", nullable = false, length = 17)
-    private String macAddress;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "device_id", nullable = false)
+    private DeviceEntity device;
 
     /**
      * Device IP address at the time of this status change.
@@ -75,10 +74,10 @@ public class DeviceStatusHistoryEntity {
     public DeviceStatusHistoryEntity() {
     }
 
-    public DeviceStatusHistoryEntity(NetworkEntity network, String macAddress, String ipAddress,
+    public DeviceStatusHistoryEntity(NetworkEntity network, DeviceEntity device, String ipAddress,
             Boolean online, LocalDateTime timestamp) {
         this.network = network;
-        this.macAddress = macAddress;
+        this.device = device;
         this.ipAddress = ipAddress;
         this.online = online;
         this.timestamp = timestamp;
@@ -102,12 +101,12 @@ public class DeviceStatusHistoryEntity {
         this.network = network;
     }
 
-    public String getMacAddress() {
-        return macAddress;
+    public DeviceEntity getDevice() {
+        return device;
     }
 
-    public void setMacAddress(String macAddress) {
-        this.macAddress = macAddress;
+    public void setDevice(DeviceEntity device) {
+        this.device = device;
     }
 
     public String getIpAddress() {

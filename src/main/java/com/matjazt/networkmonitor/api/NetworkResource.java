@@ -149,12 +149,12 @@ public class NetworkResource {
     /**
      * Convert DeviceStatusHistory entity to DTO.
      */
-    private Map<String, Object> toDeviceDto(DeviceStatusHistoryEntity device) {
+    private Map<String, Object> toDeviceDto(DeviceStatusHistoryEntity historyEntry) {
         return Map.of(
-                "macAddress", device.getMacAddress(),
-                "ipAddress", device.getIpAddress(),
-                "online", device.getOnline(),
-                "timestamp", device.getTimestamp().format(ISO_FORMATTER));
+                "macAddress", historyEntry.getDevice().getMacAddress(),
+                "ipAddress", historyEntry.getIpAddress(),
+                "online", historyEntry.getOnline(),
+                "timestamp", historyEntry.getTimestamp().format(ISO_FORMATTER));
     }
 
     /**

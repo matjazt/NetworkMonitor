@@ -3,9 +3,7 @@ package com.matjazt.networkmonitor.service;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,11 +74,13 @@ public class MessageProcessingService {
             network.setLastSeen(messageTimestamp);
             networkRepository.save(network);
 
-            // Get list of currently online MACs from message
-            Set<String> currentlyOnlineMacs = new HashSet<>();
-            for (NetworkStatusMessage.DeviceInfo device : message.getDevices()) {
-                currentlyOnlineMacs.add(device.getMac());
-            }
+            /*
+             * // Get list of currently online MACs from message
+             * Set<String> currentlyOnlineMacs = new HashSet<>();
+             * for (NetworkStatusMessage.DeviceInfo deviceStatus : message.getDevices()) {
+             * currentlyOnlineMacs.add(deviceStatus.getMac());
+             * }
+             */
 
             // load all devices from the device repository for this network
             var knownDevices = deviceRepository.findAllForNetwork(network.getId());
@@ -91,7 +91,7 @@ public class MessageProcessingService {
             List<Long> processedDevices = new ArrayList<>();
 
             // Process each device in the message (all are online)
-            for (NetworkStatusMessage.DeviceInfo device : message.getDevices()) {
+            for (NetworkStatusMessage.DeviceInfo deviceStatus : message.getDevices()) {
 
                 // Determine if we need to record a state change
                 boolean shouldRecord = false;
@@ -103,56 +103,58 @@ public class MessageProcessingService {
                 // 3. device is unknown -> record online, add to device repository, log new
                 // device
 
-                var mac = device.getMac();
-                var ip = device.getIp();
+                var mac = deviceStatus.getMac();
+                var ip = deviceStatus.getIp();
 
-                // find the combination of mac and ip in the known devices list; keep in mind
-                // that ip can be null
+                // find the mac in the known devices list
                 var knownDeviceOpt = knownDevices.stream().filter(
-                        d -> d.getMacAddress().equals(mac) && (d.getIpAddress() == null || d.getIpAddress().equals(ip)))
+                        d -> d.getMacAddress().equals(mac))
                         .findFirst();
+
+                DeviceEntity device = null;
 
                 if (knownDeviceOpt.isEmpty()) {
                     // new device, add to repository
-                    var newDevice = new DeviceEntity();
-                    newDevice.setNetwork(network);
-                    newDevice.setMacAddress(mac);
-                    newDevice.setIpAddress(ip);
-                    newDevice.setDeviceOperationMode(DeviceOperationMode.UNAUTHORIZED); // default for new devices
-                    newDevice.setOnline(true); // currently online, obviously
-                    newDevice.setFirstSeen(messageTimestamp);
-                    newDevice.setLastSeen(messageTimestamp);
+                    device = new DeviceEntity();
+                    device.setNetwork(network);
+                    device.setMacAddress(mac);
+                    device.setIpAddress(ip);
+                    device.setDeviceOperationMode(DeviceOperationMode.UNAUTHORIZED); // default for new devices
+                    device.setOnline(true); // currently online, obviously
+                    device.setFirstSeen(messageTimestamp);
+                    device.setLastSeen(messageTimestamp);
                     // persist the new device before using it in the alert
-                    deviceRepository.save(newDevice);
+                    deviceRepository.save(device);
 
-                    alerterService.openAlert(AlertType.UNAUTHORIZED_DEVICE, network, newDevice,
+                    alerterService.openAlert(AlertType.UNAUTHORIZED_DEVICE, network, device,
                             "device detected for the first time");
 
                     // also add to device history
                     shouldRecord = true;
                 } else {
                     // known device
-                    var knownDevice = knownDeviceOpt.get();
-                    processedDevices.add(knownDevice.getId());
+                    device = knownDeviceOpt.get();
+                    processedDevices.add(device.getId());
 
                     // in all cases, update device's current online status and last seen
-                    knownDevice.setOnline(true);
-                    knownDevice.setLastSeen(messageTimestamp);
+                    device.setOnline(true);
+                    device.setLastSeen(messageTimestamp);
 
                     // see if alert needs to be sent for unauthorized device
-                    if (knownDevice.getDeviceOperationMode() == DeviceOperationMode.UNAUTHORIZED
-                            && knownDevice.getActiveAlertId() == null) {
+                    if (device.getDeviceOperationMode() == DeviceOperationMode.UNAUTHORIZED
+                            && device.getActiveAlertId() == null) {
                         // device is not allowed and no alert has been sent yet
-                        alerterService.openAlert(AlertType.UNAUTHORIZED_DEVICE, network, knownDevice,
+                        alerterService.openAlert(AlertType.UNAUTHORIZED_DEVICE, network, device,
                                 "device was seen before");
                     } else {
                         // openAlert saves the device, so only save if no alert was opened
-                        deviceRepository.save(knownDevice);
+                        deviceRepository.save(device);
                     }
 
                     // check last known status - search in previouslyOnlineDevices
+                    var deviceId = device.getId();
                     var lastOnlineStatus = previouslyOnlineDevices.stream()
-                            .filter(d -> d.getMacAddress().equals(mac))
+                            .filter(d -> d.getDevice().getId() == deviceId)
                             .findFirst();
 
                     if (lastOnlineStatus.isPresent()) {
@@ -161,7 +163,7 @@ public class MessageProcessingService {
                     } else {
                         // The device was offline, now online
                         shouldRecord = true;
-                        if (knownDevice.getDeviceOperationMode() == DeviceOperationMode.UNAUTHORIZED) {
+                        if (device.getDeviceOperationMode() == DeviceOperationMode.UNAUTHORIZED) {
                             LOGGER.info("Device " + mac + " (" + ip + ") is not allowed on network "
                                     + network.getName() + " but is online!");
                         } else {
@@ -173,7 +175,7 @@ public class MessageProcessingService {
 
                 if (shouldRecord) {
                     DeviceStatusHistoryEntity status = new DeviceStatusHistoryEntity(
-                            network, mac, ip, true, messageTimestamp);
+                            network, device, ip, true, messageTimestamp);
                     deviceStatusRepository.save(status);
                 }
 
@@ -194,7 +196,7 @@ public class MessageProcessingService {
 
                 // check if the device was previously online
                 var lastOnlineStatus = previouslyOnlineDevices.stream()
-                        .filter(d -> d.getMacAddress().equals(mac))
+                        .filter(d -> d.getDevice().getId() == knownDevice.getId())
                         .findFirst();
 
                 if (lastOnlineStatus.isPresent()) {
@@ -203,7 +205,7 @@ public class MessageProcessingService {
 
                     // Record offline status with last known IP
                     var offlineStatus = new DeviceStatusHistoryEntity(
-                            network, mac,
+                            network, knownDevice,
                             ip,
                             false, messageTimestamp);
                     deviceStatusRepository.save(offlineStatus);

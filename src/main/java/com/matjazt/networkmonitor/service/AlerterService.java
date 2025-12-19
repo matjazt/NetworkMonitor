@@ -108,12 +108,12 @@ public class AlerterService {
         LOGGER.info("shutting down...");
     }
 
-    public void sendAlert(AlertType alertType, boolean closure, NetworkEntity network, DeviceEntity device,
+    private void sendAlert(AlertEntity alert, boolean closure, NetworkEntity network, DeviceEntity device,
             String message) {
 
-        String baseMessage = ALERT_TYPE_MESSAGES.get(alertType);
+        String baseMessage = ALERT_TYPE_MESSAGES.get(alert.getAlertType());
         if (baseMessage == null) {
-            throw new IllegalArgumentException("Unsupported alert type: " + alertType);
+            throw new IllegalArgumentException("Unsupported alert type: " + alert.getAlertType());
         }
 
         var subject = "[" + network.getName() + "] ";
@@ -134,21 +134,27 @@ public class AlerterService {
         }
 
         if (device != null) {
-            fullMessageEntries.add("Device: " + device.getName() + " (mac:" + device.getMacAddress() + ", ip:"
+            fullMessageEntries.add("Device: " + device.getNameOrUnknown() + " (mac:" + device.getMacAddress() + ", ip:"
                     + device.getIpAddress() + ")");
         }
         fullMessageEntries.add("UTC time: " + LocalDateTime.now(ZoneOffset.UTC).toString());
+        fullMessageEntries.add("Alert Type: " + alert.getAlertType());
+        fullMessageEntries.add("Alert Id: " + alert.getId());
+
         fullMessageEntries.add(""); // empty line
 
-        fullMessageEntries.add(baseMessage + ".");
+        if (!closure) {
+            fullMessageEntries.add(baseMessage + ".");
+        }
 
         if (message != null && !message.isBlank()) {
             fullMessageEntries.add(""); // empty line
             fullMessageEntries.add("Additional info: " + message);
+            fullMessageEntries.add("Original description: " + baseMessage + ".");
         }
 
         var fullMessage = String.join(System.lineSeparator(), fullMessageEntries);
-        LOGGER.warn("fullMessage: {}", fullMessage);
+        LOGGER.warn("fullMessage:\n{}", fullMessage);
 
         // Send email if network has an email address configured
         if (network != null && network.getEmailAddress() != null && !network.getEmailAddress().isEmpty()) {
@@ -201,7 +207,7 @@ public class AlerterService {
         }
 
         // send alert notification
-        sendAlert(alertType, false, network, device, message);
+        sendAlert(alert, false, network, device, message);
 
         // return created alert (including its ID)
         return alert;
@@ -247,7 +253,7 @@ public class AlerterService {
         message = (message != null ? message.trim() : "") + "\n" + durationInfo;
 
         // send alert notification
-        sendAlert(alert.getAlertType(), true, network, device, message);
+        sendAlert(alert, true, network, device, message);
 
         // return closed alert
         return alert;
@@ -366,7 +372,7 @@ public class AlerterService {
                 } else {
                     // device is up
                     if (device.getActiveAlertId() != null
-                            && deviceStatusRepository.findLatestByMacAddress(network, device.getMacAddress())
+                            && deviceStatusRepository.findLatestByDevice(network, device)
                                     .getTimestamp().isBefore(alertingThreshold)) {
                         // device was down, now it's back up and has been up for long enough - send
                         // recovery alert
