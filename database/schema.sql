@@ -138,7 +138,8 @@ CREATE TABLE device (
 	device_operation_mode_id int4 NOT NULL,
 	active_alert_id int8 NULL,
 	CONSTRAINT device_pkey PRIMARY KEY (id),
-	CONSTRAINT fk_device_device_operation_mode FOREIGN KEY (device_operation_mode_id) REFERENCES device_operation_mode(id)
+	CONSTRAINT fk_device_device_operation_mode FOREIGN KEY (device_operation_mode_id) REFERENCES device_operation_mode(id),
+	CONSTRAINT fk_devicet_network FOREIGN KEY (network_id) REFERENCES network(id)
 );
 CREATE INDEX i_device_network ON public.device USING btree (network_id);
 CREATE INDEX idx_device_mac ON public.device USING btree (mac_address);

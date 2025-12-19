@@ -18,6 +18,7 @@ import com.matjazt.networkmonitor.entity.AlertType;
 import com.matjazt.networkmonitor.entity.DeviceEntity;
 import com.matjazt.networkmonitor.entity.DeviceOperationMode;
 import com.matjazt.networkmonitor.entity.NetworkEntity;
+import com.matjazt.tools.SimpleTools;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -60,7 +61,6 @@ public class AlerterService {
 
     @Inject
     private MonitoringDAO monitoringDao;
-
 
     private static final Map<AlertType, String> ALERT_TYPE_MESSAGES = Map.ofEntries(
             Map.entry(AlertType.NETWORK_DOWN, "Network is unavailable"),
@@ -130,7 +130,7 @@ public class AlerterService {
             fullMessageEntries.add("Device: " + device.getNameOrUnknown() + " (mac:" + device.getMacAddress() + ", ip:"
                     + device.getIpAddress() + ")");
         }
-        fullMessageEntries.add("UTC time: " + LocalDateTime.now(ZoneOffset.UTC).toString());
+        fullMessageEntries.add("UTC time: " + SimpleTools.formatDefault(LocalDateTime.now(ZoneOffset.UTC)));
         fullMessageEntries.add("Alert Type: " + alert.getAlertType());
         fullMessageEntries.add("Alert Id: " + alert.getId());
 
@@ -237,7 +237,7 @@ public class AlerterService {
         // append the information about the alert we are closing to the message: alert
         // timestamp and duration
         var duration = java.time.Duration.between(alert.getTimestamp(), alert.getClosureTimestamp());
-        String durationInfo = "Alert opened at: " + alert.getTimestamp().toString() + "\nDuration: "
+        String durationInfo = "Alert opened at: " +  SimpleTools.formatDefault(alert.getTimestamp()) + "\nDuration: "
                 + String.format("%d days, %d hours, %d minutes, %d seconds",
                         duration.toDaysPart(),
                         duration.toHoursPart(),
