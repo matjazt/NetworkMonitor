@@ -1,4 +1,7 @@
--- public.account_type definition
+
+
+
+-- account_type definition
 
 -- Drop table
 
@@ -13,7 +16,7 @@ CREATE TABLE account_type (
 );
 
 
--- public.alert_type definition
+-- alert_type definition
 
 -- Drop table
 
@@ -28,7 +31,7 @@ CREATE TABLE alert_type (
 );
 
 
--- public.device_operation_mode definition
+-- device_operation_mode definition
 
 -- Drop table
 
@@ -43,29 +46,8 @@ CREATE TABLE device_operation_mode (
 );
 
 
--- public.device_status_history definition
 
--- Drop table
-
--- DROP TABLE device_status_history;
-
-CREATE TABLE device_status_history (
-	id bigserial NOT NULL,
-	ip_address varchar(45) NOT NULL,
-	online bool NOT NULL,
-	"timestamp" timestamp NOT NULL,
-	network_id int8 NOT NULL,
-	device_id int8 NULL,
-	CONSTRAINT pk_device_status_history PRIMARY KEY (id),
-	CONSTRAINT fk_device_status_history_network FOREIGN KEY (network_id) REFERENCES network(id),
-	CONSTRAINT fk_device_status_history_device FOREIGN KEY (device_id) REFERENCES device(id)
-);
-CREATE INDEX idx_device_status_history_network ON public.device_status_history USING btree (network_id);
-CREATE INDEX idx_device_status_history_device ON public.device_status_history USING btree (device_id);
-CREATE INDEX idx_device_status_history_timestamp ON public.device_status_history USING btree ("timestamp");
-
-
--- public.network definition
+-- network definition
 
 -- Drop table
 
@@ -84,7 +66,32 @@ CREATE TABLE network (
 );
 
 
--- public.account definition
+-- device definition
+
+-- Drop table
+
+-- DROP TABLE device;
+
+CREATE TABLE device (
+	id bigserial NOT NULL,
+	first_seen timestamp NOT NULL,
+	ip_address varchar(45) NULL,
+	last_seen timestamp NOT NULL,
+	mac_address varchar(17) NOT NULL,
+	"name" varchar(200) NULL,
+	online bool NOT NULL,
+	network_id int8 NOT NULL,
+	device_operation_mode_id int4 NOT NULL,
+	active_alert_id int8 NULL,
+	CONSTRAINT pk_device PRIMARY KEY (id),
+	CONSTRAINT fk_device_device_operation_mode FOREIGN KEY (device_operation_mode_id) REFERENCES device_operation_mode(id),
+	CONSTRAINT fk_device_network FOREIGN KEY (network_id) REFERENCES network(id)
+);
+CREATE INDEX idx_device_network ON device USING btree (network_id);
+CREATE INDEX idx_device_mac_address ON device USING btree (mac_address);
+
+
+-- account definition
 
 -- Drop table
 
@@ -106,7 +113,31 @@ CREATE TABLE account (
 );
 
 
--- public.account_network definition
+-- device_status_history definition
+
+-- Drop table
+
+-- DROP TABLE device_status_history;
+
+CREATE TABLE device_status_history (
+	id bigserial NOT NULL,
+	ip_address varchar(45) NOT NULL,
+	online bool NOT NULL,
+	"timestamp" timestamp NOT NULL,
+	network_id int8 NOT NULL,
+	device_id int8 NULL,
+	CONSTRAINT pk_device_status_history PRIMARY KEY (id),
+	CONSTRAINT fk_device_status_history_network FOREIGN KEY (network_id) REFERENCES network(id),
+	CONSTRAINT fk_device_status_history_device FOREIGN KEY (device_id) REFERENCES device(id)
+);
+CREATE INDEX idx_device_status_history_network ON device_status_history USING btree (network_id);
+CREATE INDEX idx_device_status_history_device ON device_status_history USING btree (device_id);
+CREATE INDEX idx_device_status_history_timestamp ON device_status_history USING btree ("timestamp");
+
+
+
+
+-- account_network definition
 
 -- Drop table
 
@@ -120,35 +151,12 @@ CREATE TABLE account_network (
 	CONSTRAINT fk_account_network_account FOREIGN KEY (account_id) REFERENCES account(id),
 	CONSTRAINT fk_account_network_network FOREIGN KEY (network_id) REFERENCES network(id)
 );
-CREATE UNIQUE INDEX uk_account_network ON public.account_network USING btree (account_id, network_id);
+CREATE UNIQUE INDEX uk_account_network ON account_network USING btree (account_id, network_id);
 
 
--- public.device definition
-
--- Drop table
-
--- DROP TABLE device;
-
-CREATE TABLE device (
-	id bigserial NOT NULL,
-	first_seen timestamp NOT NULL,
-	ip_address varchar(45) NULL,
-	last_seen timestamp NOT NULL,
-	mac_address varchar(17) NOT NULL,
-	"name" varchar(200) NULL,
-	online bool NOT NULL,
-	network_id int8 NOT NULL,
-	device_operation_mode_id int4 NOT NULL,
-	active_alert_id int8 NULL,
-	CONSTRAINT pk_device PRIMARY KEY (id),
-	CONSTRAINT fk_device_device_operation_mode FOREIGN KEY (device_operation_mode_id) REFERENCES device_operation_mode(id),
-	CONSTRAINT fk_device_network FOREIGN KEY (network_id) REFERENCES network(id)
-);
-CREATE INDEX idx_device_network ON public.device USING btree (network_id);
-CREATE INDEX idx_device_mac_address ON public.device USING btree (mac_address);
 
 
--- public.alert definition
+-- alert definition
 
 -- Drop table
 
@@ -167,9 +175,9 @@ CREATE TABLE alert (
 	CONSTRAINT fk_alert_device FOREIGN KEY (device_id) REFERENCES device(id),
 	CONSTRAINT fk_alert_network FOREIGN KEY (network_id) REFERENCES network(id)
 );
-CREATE INDEX idx_alert_device ON public.alert USING btree (device_id);
-CREATE INDEX idx_alert_network ON public.alert USING btree (network_id);
-CREATE INDEX idx_alert_timestamp ON public.alert USING btree ("timestamp");
+CREATE INDEX idx_alert_device ON alert USING btree (device_id);
+CREATE INDEX idx_alert_network ON alert USING btree (network_id);
+CREATE INDEX idx_alert_timestamp ON alert USING btree ("timestamp");
 
 
 INSERT INTO alert_type (id, name, description) VALUES
@@ -186,4 +194,5 @@ INSERT INTO device_operation_mode (id, name, description) VALUES
 insert into account_type (id, name, description) values 
 (1, 'admin', 'administrator'),
  (2, 'user', 'ordinary user'), 
- (3, 'device', 'monitoring device')
+ (3, 'device', 'monitoring device');
+ 
