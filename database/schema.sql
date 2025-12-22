@@ -8,7 +8,7 @@ CREATE TABLE account_type (
 	id bigserial NOT NULL,
 	"name" varchar(50) NOT NULL,
 	description varchar(255) NULL,
-	CONSTRAINT account_type_pkey PRIMARY KEY (id),
+	CONSTRAINT pk_account_type PRIMARY KEY (id),
 	CONSTRAINT uk_account_type_name UNIQUE (name)
 );
 
@@ -23,7 +23,7 @@ CREATE TABLE alert_type (
 	id int4 NOT NULL,
 	"name" varchar(50) NOT NULL,
 	description varchar(255) NULL,
-	CONSTRAINT alert_type_pkey PRIMARY KEY (id),
+	CONSTRAINT pk_alert_type PRIMARY KEY (id),
 	CONSTRAINT uk_alert_type_name UNIQUE (name)
 );
 
@@ -39,7 +39,7 @@ CREATE TABLE device_operation_mode (
 	"name" varchar(50) NOT NULL,
 	description text NULL,
 	CONSTRAINT uk_device_operation_mode_name UNIQUE (name),
-	CONSTRAINT device_operation_mode_pkey PRIMARY KEY (id)
+	CONSTRAINT pk_device_operation_mode PRIMARY KEY (id)
 );
 
 
@@ -56,7 +56,7 @@ CREATE TABLE device_status_history (
 	"timestamp" timestamp NOT NULL,
 	network_id int8 NOT NULL,
 	device_id int8 NULL,
-	CONSTRAINT device_status_history_pkey PRIMARY KEY (id),
+	CONSTRAINT pk_device_status_history PRIMARY KEY (id),
 	CONSTRAINT fk_device_status_history_network FOREIGN KEY (network_id) REFERENCES network(id),
 	CONSTRAINT fk_device_status_history_device FOREIGN KEY (device_id) REFERENCES device(id)
 );
@@ -79,7 +79,7 @@ CREATE TABLE network (
 	last_seen timestamp NOT NULL,
 	"name" varchar(100) NOT NULL,
 	active_alert_id int8 NULL,
-	CONSTRAINT network_pkey PRIMARY KEY (id),
+	CONSTRAINT pk_network PRIMARY KEY (id),
 	CONSTRAINT uk_network_name UNIQUE (name)
 );
 
@@ -99,7 +99,7 @@ CREATE TABLE account (
 	password_hash varchar(255) NOT NULL,
 	username varchar(100) NOT NULL,
 	account_type_id int4 NOT NULL,
-	CONSTRAINT account_pkey PRIMARY KEY (id),
+	CONSTRAINT pk_account PRIMARY KEY (id),
 	CONSTRAINT uk_account_email UNIQUE (email),
 	CONSTRAINT uk_account_username UNIQUE (username),
 	CONSTRAINT fk_account_account_type FOREIGN KEY (account_type_id) REFERENCES account_type(id)
@@ -116,7 +116,7 @@ CREATE TABLE account_network (
 	id bigserial NOT NULL,
 	account_id int8 NOT NULL,
 	network_id int8 NOT NULL,
-	CONSTRAINT account_network_pkey PRIMARY KEY (id),
+	CONSTRAINT pk_account_network PRIMARY KEY (id),
 	CONSTRAINT fk_account_network_account FOREIGN KEY (account_id) REFERENCES account(id),
 	CONSTRAINT fk_account_network_network FOREIGN KEY (network_id) REFERENCES network(id)
 );
@@ -140,7 +140,7 @@ CREATE TABLE device (
 	network_id int8 NOT NULL,
 	device_operation_mode_id int4 NOT NULL,
 	active_alert_id int8 NULL,
-	CONSTRAINT device_pkey PRIMARY KEY (id),
+	CONSTRAINT pk_device PRIMARY KEY (id),
 	CONSTRAINT fk_device_device_operation_mode FOREIGN KEY (device_operation_mode_id) REFERENCES device_operation_mode(id),
 	CONSTRAINT fk_device_network FOREIGN KEY (network_id) REFERENCES network(id)
 );
@@ -162,7 +162,7 @@ CREATE TABLE alert (
 	"timestamp" timestamp NOT NULL,
 	device_id int8 NULL,
 	network_id int8 NOT NULL,
-	CONSTRAINT alert_pkey PRIMARY KEY (id),
+	CONSTRAINT pk_alert PRIMARY KEY (id),
 	CONSTRAINT fk_alert_alert_type FOREIGN KEY (alert_type_id) REFERENCES alert_type(id),
 	CONSTRAINT fk_alert_device FOREIGN KEY (device_id) REFERENCES device(id),
 	CONSTRAINT fk_alert_network FOREIGN KEY (network_id) REFERENCES network(id)
