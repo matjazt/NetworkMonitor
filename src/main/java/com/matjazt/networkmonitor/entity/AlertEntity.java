@@ -10,7 +10,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -22,11 +21,7 @@ import jakarta.persistence.Table;
  * unauthorized devices are detected.
  */
 @Entity
-@Table(name = "alert", indexes = {
-        @Index(name = "idx_alert_network", columnList = "network_id"),
-        @Index(name = "idx_alert_device", columnList = "device_id"),
-        @Index(name = "idx_alert_timestamp", columnList = "timestamp")
-})
+@Table(name = "alert")
 public class AlertEntity {
 
     @Id

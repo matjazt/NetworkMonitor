@@ -11,7 +11,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -23,10 +22,7 @@ import jakarta.persistence.Table;
  * while DeviceStatusHistory tracks historical changes.
  */
 @Entity
-@Table(name = "device", indexes = {
-        @Index(name = "idx_device_mac", columnList = "mac_address"),
-        @Index(name = "idx_device_network", columnList = "network_id")
-})
+@Table(name = "device")
 public class DeviceEntity {
 
     @Id

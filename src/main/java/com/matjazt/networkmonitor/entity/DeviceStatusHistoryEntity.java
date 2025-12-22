@@ -8,7 +8,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -22,10 +21,7 @@ import jakarta.persistence.Table;
  * not on every MQTT message.
  */
 @Entity
-@Table(name = "device_status_history", indexes = {
-        // Index for fast lookups by network
-        @Index(name = "idx_network_id", columnList = "network_id")
-})
+@Table(name = "device_status_history")
 public class DeviceStatusHistoryEntity {
 
     @Id

@@ -116,3 +116,23 @@ CREATE INDEX idx_alert_timestamp ON alert(timestamp);
 ALTER TABLE alert
   ADD CONSTRAINT fk_alert_alert_type
   FOREIGN KEY (alert_type_id) REFERENCES alert_type(id);
+
+ALTER TABLE alert
+  ADD CONSTRAINT fk_alert_device
+  FOREIGN KEY (device_id) REFERENCES device(id);
+
+ALTER TABLE device
+  ADD CONSTRAINT fk_devicet_network
+  FOREIGN KEY (network_id) REFERENCES network(id);
+
+ALTER TABLE alert
+  ADD CONSTRAINT fk_alert_network
+  FOREIGN KEY (network_id) REFERENCES network(id);
+
+ALTER TABLE account_network
+  ADD CONSTRAINT fk_account_network_network
+  FOREIGN KEY (network_id) REFERENCES network(id);
+
+ALTER TABLE account_network
+  ADD CONSTRAINT fk_account_network_account
+  FOREIGN KEY (account_id) REFERENCES account(id);
