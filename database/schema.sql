@@ -9,7 +9,7 @@ CREATE TABLE account_type (
 	"name" varchar(50) NOT NULL,
 	description varchar(255) NULL,
 	CONSTRAINT account_type_pkey PRIMARY KEY (id),
-	CONSTRAINT account_type_name_unique UNIQUE (name)
+	CONSTRAINT uk_account_type_name UNIQUE (name)
 );
 
 
@@ -24,7 +24,7 @@ CREATE TABLE alert_type (
 	"name" varchar(50) NOT NULL,
 	description varchar(255) NULL,
 	CONSTRAINT alert_type_pkey PRIMARY KEY (id),
-	CONSTRAINT alert_type_name_unique UNIQUE (name)
+	CONSTRAINT uk_alert_type_name UNIQUE (name)
 );
 
 
@@ -38,7 +38,7 @@ CREATE TABLE device_operation_mode (
 	id int4 NOT NULL,
 	"name" varchar(50) NOT NULL,
 	description text NULL,
-	CONSTRAINT device_operation_mode_name_unique UNIQUE (name),
+	CONSTRAINT uk_device_operation_mode_name UNIQUE (name),
 	CONSTRAINT device_operation_mode_pkey PRIMARY KEY (id)
 );
 
@@ -56,8 +56,13 @@ CREATE TABLE device_status_history (
 	"timestamp" timestamp NOT NULL,
 	network_id int8 NOT NULL,
 	device_id int8 NULL,
-	CONSTRAINT device_status_history_pkey PRIMARY KEY (id)
+	CONSTRAINT device_status_history_pkey PRIMARY KEY (id),
+	CONSTRAINT fk_device_status_history_network FOREIGN KEY (network_id) REFERENCES network(id),
+	CONSTRAINT fk_device_status_history_device FOREIGN KEY (device_id) REFERENCES device(id)
 );
+CREATE INDEX idx_device_status_history_network ON public.device_status_history USING btree (network_id);
+CREATE INDEX idx_device_status_history_device ON public.device_status_history USING btree (device_id);
+CREATE INDEX idx_device_status_history_timestamp ON public.device_status_history USING btree ("timestamp");
 
 
 -- public.network definition
@@ -75,7 +80,7 @@ CREATE TABLE network (
 	"name" varchar(100) NOT NULL,
 	active_alert_id int8 NULL,
 	CONSTRAINT network_pkey PRIMARY KEY (id),
-	CONSTRAINT network_name_unique UNIQUE (name)
+	CONSTRAINT uk_network_name UNIQUE (name)
 );
 
 
@@ -95,8 +100,8 @@ CREATE TABLE account (
 	username varchar(100) NOT NULL,
 	account_type_id int4 NOT NULL,
 	CONSTRAINT account_pkey PRIMARY KEY (id),
-	CONSTRAINT account_email_unique UNIQUE (email),
-	CONSTRAINT account_username_unique UNIQUE (username),
+	CONSTRAINT uk_account_email UNIQUE (email),
+	CONSTRAINT uk_account_username UNIQUE (username),
 	CONSTRAINT fk_account_account_type FOREIGN KEY (account_type_id) REFERENCES account_type(id)
 );
 
@@ -115,7 +120,7 @@ CREATE TABLE account_network (
 	CONSTRAINT fk_account_network_account FOREIGN KEY (account_id) REFERENCES account(id),
 	CONSTRAINT fk_account_network_network FOREIGN KEY (network_id) REFERENCES network(id)
 );
-CREATE UNIQUE INDEX account_network_unique ON public.account_network USING btree (account_id, network_id);
+CREATE UNIQUE INDEX uk_account_network ON public.account_network USING btree (account_id, network_id);
 
 
 -- public.device definition
@@ -137,10 +142,10 @@ CREATE TABLE device (
 	active_alert_id int8 NULL,
 	CONSTRAINT device_pkey PRIMARY KEY (id),
 	CONSTRAINT fk_device_device_operation_mode FOREIGN KEY (device_operation_mode_id) REFERENCES device_operation_mode(id),
-	CONSTRAINT fk_devicet_network FOREIGN KEY (network_id) REFERENCES network(id)
+	CONSTRAINT fk_device_network FOREIGN KEY (network_id) REFERENCES network(id)
 );
-CREATE INDEX device_network_idx ON public.device USING btree (network_id);
-CREATE INDEX device_mac_idx ON public.device USING btree (mac_address);
+CREATE INDEX idx_device_network ON public.device USING btree (network_id);
+CREATE INDEX idx_device_mac_address ON public.device USING btree (mac_address);
 
 
 -- public.alert definition
@@ -162,9 +167,9 @@ CREATE TABLE alert (
 	CONSTRAINT fk_alert_device FOREIGN KEY (device_id) REFERENCES device(id),
 	CONSTRAINT fk_alert_network FOREIGN KEY (network_id) REFERENCES network(id)
 );
-CREATE INDEX alert_device_idx ON public.alert USING btree (device_id);
-CREATE INDEX alert_network_idx ON public.alert USING btree (network_id);
-CREATE INDEX alert_timestamp_idx ON public.alert USING btree ("timestamp");
+CREATE INDEX idx_alert_device ON public.alert USING btree (device_id);
+CREATE INDEX idx_alert_network ON public.alert USING btree (network_id);
+CREATE INDEX idx_alert_timestamp ON public.alert USING btree ("timestamp");
 
 
 INSERT INTO alert_type (id, name, description) VALUES
