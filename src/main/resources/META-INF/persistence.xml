@@ -42,6 +42,7 @@
               - drop-and-create: same as create
               - create-or-extend-tables: create missing tables, keep existing data
       -->
+      <property name="openjpa.jdbc.Schema" value="main" />
       <property name="jakarta.persistence.schema-generation.database.action"
         value="create" />
       <!-- 

@@ -136,3 +136,9 @@ ALTER TABLE account_network
 ALTER TABLE account_network
   ADD CONSTRAINT fk_account_network_account
   FOREIGN KEY (account_id) REFERENCES account(id);
+
+-- reset history and all alerts
+delete from alert where id > 0;
+delete from device_status_history where id > 0;
+update network set active_alert_id = null, last_seen = first_seen ;
+update device set active_alert_id = null, last_seen = first_seen ;

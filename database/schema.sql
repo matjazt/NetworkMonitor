@@ -87,8 +87,11 @@ CREATE TABLE device (
 	CONSTRAINT fk_device_device_operation_mode FOREIGN KEY (device_operation_mode_id) REFERENCES device_operation_mode(id),
 	CONSTRAINT fk_device_network FOREIGN KEY (network_id) REFERENCES network(id)
 );
-CREATE INDEX idx_device_network ON device USING btree (network_id);
-CREATE INDEX idx_device_mac_address ON device USING btree (mac_address);
+-- CREATE INDEX idx_device_network ON device USING btree (network_id);
+-- CREATE INDEX idx_device_mac_address ON device USING btree (mac_address);
+-- DROP INDEX idx_device_network;
+-- DROP INDEX idx_device_mac_address;
+CREATE UNIQUE INDEX uk_device_network_mac_address ON device USING btree (network_id, mac_address);
 
 
 -- account definition
