@@ -113,6 +113,12 @@ public class AlerterService {
 
         var fullMessageEntries = new ArrayList<String>();
 
+        if (alert.getAlertType() == AlertType.NETWORK_DOWN) {
+            subject += "network";
+        } else {
+            subject += "device";
+        }
+
         if (closure) {
             fullMessageEntries.add("ALERT CLOSED");
             subject += " alert closure";
@@ -154,7 +160,7 @@ public class AlerterService {
             // figure out email subject
 
             if (device != null) {
-                subject += " for device: " + device.getNameOrMac();
+                subject += " for " + device.getNameOrMac();
             }
 
             try {
@@ -237,7 +243,7 @@ public class AlerterService {
         // append the information about the alert we are closing to the message: alert
         // timestamp and duration
         var duration = java.time.Duration.between(alert.getTimestamp(), alert.getClosureTimestamp());
-        String durationInfo = "Alert opened at: " +  SimpleTools.formatDefault(alert.getTimestamp()) + "\nDuration: "
+        String durationInfo = "Alert opened at: " + SimpleTools.formatDefault(alert.getTimestamp()) + " UTC\nDuration: "
                 + String.format("%d days, %d hours, %d minutes, %d seconds",
                         duration.toDaysPart(),
                         duration.toHoursPart(),
@@ -304,7 +310,7 @@ public class AlerterService {
      */
     @Timeout
     public void checkForAlerts() {
-        LOGGER.info("Running scheduled alert task...");
+        LOGGER.trace("Running scheduled alert task...");
 
         // process networks one by one
         for (NetworkEntity network : monitoringDao.findAll()) {
@@ -320,6 +326,7 @@ public class AlerterService {
 
         var now = LocalDateTime.now(ZoneOffset.UTC);
         var alertingThreshold = now.minusSeconds(network.getAlertingDelay());
+        var closureThreshold = alertingThreshold.plusSeconds(Math.min(30, network.getAlertingDelay() / 10));
 
         if (network.getLastSeen().isBefore(alertingThreshold)) {
             // network is down
@@ -366,7 +373,7 @@ public class AlerterService {
                     // device is up
                     if (device.getActiveAlertId() != null
                             && monitoringDao.findLatestByDevice(network, device)
-                                    .getTimestamp().isBefore(alertingThreshold)) {
+                                    .getTimestamp().isBefore(closureThreshold)) {
                         // device was down, now it's back up and has been up for long enough - send
                         // recovery alert
                         closeAlert(network, device, null);

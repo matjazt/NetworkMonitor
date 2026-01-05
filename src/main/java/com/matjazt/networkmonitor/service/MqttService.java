@@ -2,7 +2,6 @@ package com.matjazt.networkmonitor.service;
 
 import java.io.FileInputStream;
 import java.security.KeyStore;
-import java.util.List;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -19,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.matjazt.networkmonitor.config.ConfigProvider;
+import com.matjazt.networkmonitor.dao.MonitoringDAO;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -46,6 +46,9 @@ public class MqttService {
 
     @Inject
     private MessageProcessingService messageProcessor;
+
+    @Inject
+    private MonitoringDAO monitoringDao;
 
     private MqttClient mqttClient;
 
@@ -92,7 +95,6 @@ public class MqttService {
                 public void messageArrived(String topic, MqttMessage message) {
                     // Delegate message processing to dedicated service
                     String payload = new String(message.getPayload());
-                    LOGGER.debug("Received message on topic {}: {}", topic, payload);
                     messageProcessor.processMessage(topic, payload);
                 }
 
@@ -108,8 +110,12 @@ public class MqttService {
             LOGGER.info("Connected to MQTT broker");
 
             // Subscribe to all configured topics
-            List<String> topics = config.getMqttTopics();
-            for (String topic : topics) {
+
+            // Obtain list of networks from database
+            var networks = monitoringDao.findAll();
+            String topicTemplate = config.getMqttTopicTemplate();
+            for (var network : networks) {
+                String topic = topicTemplate.replace("{networkName}", network.getName());
                 mqttClient.subscribe(topic, 1); // QoS 1: at least once delivery
                 LOGGER.info("Subscribed to topic: {}", topic);
             }

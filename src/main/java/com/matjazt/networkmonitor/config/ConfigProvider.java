@@ -1,6 +1,5 @@
 package com.matjazt.networkmonitor.config;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -42,8 +41,8 @@ public class ConfigProvider {
     private String mqttPassword;
 
     @Inject
-    @ConfigProperty(name = "mqtt.topics")
-    private String mqttTopics; // Comma-separated string
+    @ConfigProperty(name = "mqtt.topic.template")
+    private String mqttTopicTemplate;
 
     @Inject
     @ConfigProperty(name = "mqtt.connection.timeout", defaultValue = "30")
@@ -68,10 +67,6 @@ public class ConfigProvider {
     @Inject
     @ConfigProperty(name = "mqtt.ssl.verify.hostname", defaultValue = "true")
     private Boolean mqttSslVerifyHostname;
-
-    @Inject
-    @ConfigProperty(name = "app.log.level", defaultValue = "INFO")
-    private String logLevel;
 
     // === Email/SMTP Settings ===
 
@@ -149,8 +144,8 @@ public class ConfigProvider {
      * Returns the list of MQTT topics to subscribe to.
      * Each topic typically represents a different network to monitor.
      */
-    public List<String> getMqttTopics() {
-        return List.of(mqttTopics.split(",\\s*")); // Split by comma, trim whitespace
+    public String getMqttTopicTemplate() {
+        return mqttTopicTemplate;
     }
 
     public Integer getMqttConnectionTimeout() {
@@ -175,10 +170,6 @@ public class ConfigProvider {
 
     public Boolean getMqttSslVerifyHostname() {
         return mqttSslVerifyHostname;
-    }
-
-    public String getLogLevel() {
-        return logLevel;
     }
 
     public String getSmtpHost() {

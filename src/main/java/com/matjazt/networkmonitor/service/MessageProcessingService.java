@@ -51,6 +51,8 @@ public class MessageProcessingService {
      */
     @Transactional // All database operations in one transaction
     public void processMessage(String topic, String payload) {
+        LOGGER.debug("Processing MQTT message from topic: {}:\n{}", topic, payload);
+
         try {
             // Extract network name from topic
             // For "network/MaliGrdi" -> "MaliGrdi"
@@ -96,6 +98,11 @@ public class MessageProcessingService {
                 // device
 
                 var mac = deviceStatus.getMac();
+                if (mac == null || mac.isBlank()) {
+                    LOGGER.warn("Device with missing or empty MAC address reported on network: " + network.getName());
+                    continue; // skip devices with missing MAC
+                }
+
                 var ip = deviceStatus.getIp();
 
                 // find the mac in the known devices list
@@ -131,6 +138,7 @@ public class MessageProcessingService {
                     // in all cases, update device's current online status and last seen
                     device.setOnline(true);
                     device.setLastSeen(messageTimestamp);
+                    device.setIpAddress(ip);
 
                     // see if alert needs to be sent for unauthorized device
                     if (device.getDeviceOperationMode() == DeviceOperationMode.UNAUTHORIZED
