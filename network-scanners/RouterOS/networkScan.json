@@ -1,0 +1,27 @@
+{
+	"ranges": [
+		{
+			"subnet": "192.168.101.0",
+			"start": 1,
+			"end": 254
+		}
+	],
+	"pingableNodes": [
+		{
+			"ip": "192.168.101.1",
+			"name": "modem",
+			"count": 2,
+			"timeout": 100
+		},
+		{
+			"ip": "192.168.101.3",
+			"name": "heat pump",
+			"count": 2,
+			"timeout": 100
+		}
+	],
+	"mqtt": {
+		"broker": "testbroker",
+		"topic": "network/TestNetwork/scan"
+	}
+}
