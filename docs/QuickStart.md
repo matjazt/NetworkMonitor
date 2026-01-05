@@ -2,15 +2,22 @@
 
 This guide walks you through setting up and running the Network Monitor application.
 
+## Prerequisites
+
+- PostgreSQL server running
+- Apache TomEE 10.x installed
+- JDK 17
+- Apache Maven
+
 ## Step 1: Database Setup
 
-Create the database and schema:
+Create the database and run the schema script:
 
 ```powershell
 # Create database
 psql -U postgres -c "CREATE DATABASE network_monitor;"
 
-# Create tables
+# Create tables and seed reference data
 psql -U postgres -d network_monitor -f database/schema.sql
 ```
 
@@ -19,6 +26,8 @@ Verify tables were created:
 ```powershell
 psql -U postgres -d network_monitor -c "\dt"
 ```
+
+You should see: `account`, `account_network`, `account_type`, `alert`, `alert_type`, `device`, `device_operation_mode`, `device_status_history`, `network`.
 
 ## Step 2: Configure Application
 
@@ -30,15 +39,22 @@ mqtt.broker.url=ssl://your-mqtt-broker:8883
 mqtt.client.id=network-monitor-01
 mqtt.username=your-username
 mqtt.password=your-password
-mqtt.topics=network/MaliGrdi,network/Office
+mqtt.topic.template=network/{networkName}/scan
 
-# Database Settings (also update in resources.xml)
-db.url=jdbc:postgresql://localhost:5432/network_monitor
-db.username=postgres
-db.password=postgres
+# SMTP Settings (for alerts)
+smtp.host=smtp.gmail.com
+smtp.port=587
+smtp.username=your-email@gmail.com
+smtp.password=your-app-password
+smtp.from.address=your-email@gmail.com
+smtp.from.name=Network Monitor
+
+# Alert Timing
+alert.check.initial.delay=30
+alert.check.interval=60
 ```
 
-Also update `src/main/webapp/WEB-INF/resources.xml` with your database credentials.
+Also update database connection in `src/main/resources/META-INF/persistence.xml` if needed.
 
 ## Step 3: Build
 
@@ -68,59 +84,114 @@ cd C:\path\to\tomee\bin
 
 Watch the logs for successful deployment.
 
-## Step 5: Verify Deployment
+## Step 5: Create User Account
 
-Check if application started:
+Create a user account for API access:
 
 ```powershell
-# Test REST API
-Invoke-RestMethod http://localhost:8080/network-monitor/api/networks
+# Generate BCrypt hash for password (use online tool or bcrypt library)
+# Example password hash for "password123"
+
+psql -U postgres -d network_monitor
 ```
 
-Should return an empty array `[]` initially.
+```sql
+INSERT INTO account (username, email, password_hash, full_name, account_type_id, created_at)
+VALUES ('admin', 'admin@example.com', 
+        '$2a$10$N9qo8uLOickgx2ZMRZoMye0IJxD.eONKXKQQMrZQFQTlXOvHs3Bam', 
+        'Administrator', 1, NOW());
+```
 
-## Step 6: Test MQTT Integration
+**Note**: The hash above is for password "password123". Use a proper BCrypt tool to generate secure hashes.
 
-Publish a test message:
+## Step 6: Create Network Entry
+
+Add a network to monitor:
+
+```sql
+INSERT INTO network (name, first_seen, last_seen, alerting_delay, email_address)
+VALUES ('TestNet', NOW(), NOW(), 300, 'alerts@example.com');
+```
+
+The application will automatically subscribe to the MQTT topic based on the template: `network/TestNet/scan`.
+
+## Step 7: Verify Deployment
+
+Check if application started and test REST API:
 
 ```powershell
-mosquitto_pub -h your-broker -p 8883 `
-  -t network/TestNet `
+# Test REST API (requires authentication)
+Invoke-RestMethod -Uri http://localhost:8080/network-monitor/api/networks `
+  -Headers @{Authorization=("Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("admin:password123")))}
+```
+
+Response should include account info and networks array:
+
+```json
+{
+  "accountId": 1,
+  "accountFullName": "Administrator",
+  "networks": [...]
+}
+```
+
+## Step 8: Test MQTT Integration
+
+Publish a test message to the MQTT broker:
+
+```powershell
+# For Windows PowerShell
+Get-Content docs/mqtt-examples/example-message.json | mosquitto_pub `
+  -h your-broker -p 8883 `
+  -t network/TestNet/scan `
   -u username -P password `
-  --cafile ca.crt `
+  --cafile ca.crt -l
+
+# For Linux/Mac
+mosquitto_pub -h your-broker -p 8883 \
+  -t network/TestNet/scan \
+  -u username -P password \
+  --cafile ca.crt \
   -f docs/mqtt-examples/example-message.json
 ```
 
-Check database:
+Check database for new entries:
 
 ```powershell
-psql -U postgres -d network_monitor -c "SELECT * FROM network;"
-psql -U postgres -d network_monitor -c "SELECT * FROM device_status_history;"
+psql -U postgres -d network_monitor -c "SELECT * FROM device;"
+psql -U postgres -d network_monitor -c "SELECT * FROM device_status_history ORDER BY timestamp DESC LIMIT 10;"
 ```
 
-## Step 7: Query via REST API
+## Step 9: Query via REST API
 
 List networks:
 
 ```powershell
-Invoke-RestMethod http://localhost:8080/network-monitor/api/networks
+$cred = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("admin:password123"))
+Invoke-RestMethod -Uri http://localhost:8080/network-monitor/api/networks `
+  -Headers @{Authorization="Basic $cred"}
 ```
 
 Get online devices:
 
 ```powershell
-Invoke-RestMethod http://localhost:8080/network-monitor/api/networks/TestNet/devices
+Invoke-RestMethod -Uri http://localhost:8080/network-monitor/api/networks/TestNet/devices `
+  -Headers @{Authorization="Basic $cred"}
 ```
 
 ## Troubleshooting
 
-**MQTT not connecting**: Check TomEE logs in `logs/catalina.out`. Verify broker URL and credentials.
+**MQTT not connecting**: Check TomEE logs in `logs/catalina.out`. Verify broker URL, credentials, and TLS certificate path.
 
-**Database errors**: Ensure PostgreSQL is running and credentials are correct in both config files.
+**Database errors**: Ensure PostgreSQL is running and credentials in `persistence.xml` are correct. Verify schema was loaded successfully.
 
-**WAR not deploying**: Check TomEE logs for errors. Verify Java 17 is being used.
+**Authentication fails**: Verify account exists and password hash is correct. BCrypt hash must match password.
 
-**404 on REST endpoints**: Verify application deployed successfully. URL should be `/network-monitor/api/networks`.
+**Alert emails not sending**: Check SMTP configuration in `microprofile-config.properties`. Test SMTP connectivity separately. Review logs for email errors.
+
+**WAR not deploying**: Check TomEE logs for deployment errors. Verify Java 17 is being used: `java -version`.
+
+**404 on REST endpoints**: Verify application deployed successfully. Check URL includes context path: `/network-monitor/api/networks`.
 
 ## Development Workflow
 

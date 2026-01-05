@@ -41,6 +41,18 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 
+/**
+ * Scheduled service that monitors network and device status and triggers
+ * alerts.
+ * 
+ * Uses EJB Timer Service to run periodic checks. Sends email notifications
+ * when alerts are triggered or resolved.
+ * 
+ * Alert conditions:
+ * - NETWORK_DOWN: Network hasn't reported within alerting_delay
+ * - DEVICE_DOWN: ALWAYS_ON device is offline
+ * - DEVICE_UNAUTHORIZED: UNAUTHORIZED device is online
+ */
 @Singleton
 @Startup
 public class AlerterService {

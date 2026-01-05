@@ -1,14 +1,31 @@
 ### Test REST API Endpoints
+###
+### These requests require Basic Authentication
+### Use VS Code REST Client extension or similar HTTP client
+
+# Set authentication credentials (base64 encoded username:password)
+# Example: admin:password123
+@auth = Basic YWRtaW46cGFzc3dvcmQxMjM=
+
+###
 
 # Get all monitored networks
 GET http://localhost:8080/network-monitor/api/networks
+Authorization: {{auth}}
 
 ###
 
 # Get online devices for a specific network (replace MaliGrdi with your network name)
 GET http://localhost:8080/network-monitor/api/networks/MaliGrdi/devices
+Authorization: {{auth}}
 
 ###
 
 # Test with non-existent network (should return 404)
 GET http://localhost:8080/network-monitor/api/networks/NonExistent/devices
+Authorization: {{auth}}
+
+###
+
+# Test without authentication (should return 401 Unauthorized)
+GET http://localhost:8080/network-monitor/api/networks
