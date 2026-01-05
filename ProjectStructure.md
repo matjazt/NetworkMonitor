@@ -4,7 +4,7 @@ This document explains the folder structure and key files in the Network Monitor
 
 ## Directory Layout
 
-```
+```txt
 NetworkMonitor2/
 ├── pom.xml                          # Maven project configuration
 ├── README.md                        # Project documentation
@@ -333,7 +333,7 @@ Most common: `mvn clean package` to build deployable WAR.
 ## Comparison with .NET
 
 | Jakarta EE | .NET Equivalent |
-|------------|-----------------|
+| ------------ | ----------------- |
 | Maven | MSBuild + NuGet |
 | pom.xml | .csproj |
 | WAR file | Published application |

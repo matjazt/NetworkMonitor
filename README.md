@@ -33,14 +33,8 @@ Install these extensions for Java development:
 2. **Tomcat for Java** (adashen.vscode-tomcat) or **Community Server Connectors** (redhat.vscode-community-server-connector)
    - For deploying and managing TomEE server from VS Code
 
-3. **PostgreSQL** (ckolkman.vscode-postgres)
-   - Database client for VS Code
-
-4. **XML** (redhat.vscode-xml)
+3. **XML** (redhat.vscode-xml)
    - Syntax highlighting and validation for XML configuration files
-
-5. **YAML** (redhat.vscode-yaml) - Optional
-   - If you later decide to use YAML config
 
 ## Database Setup
 

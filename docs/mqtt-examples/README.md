@@ -18,9 +18,7 @@ Each message represents a network scan result containing currently online device
 
 The MQTT topic follows the pattern defined in `mqtt.topic.template` configuration:
 
-```
-network/{networkName}/scan
-```
+```network/{networkName}/scan```
 
 For example, if you have a network named "TestNet", publish to: `network/TestNet/scan`
 
