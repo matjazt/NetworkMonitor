@@ -77,10 +77,10 @@ public class MessageProcessingService {
              */
 
             // load all devices from the device repository for this network
-            var knownDevices = monitoringDao.findAllForNetwork(network.getId());
+            var knownDevices = monitoringDao.findAllDevicesForNetwork(network.getId());
 
             // load all previously online devices for this network
-            var previouslyOnlineDevices = monitoringDao.findCurrentlyOnline(network);
+            var previouslyOnlineDevices = monitoringDao.findCurrentlyOnlineDevices(network);
 
             List<Long> processedDevices = new ArrayList<>();
 
@@ -254,7 +254,7 @@ public class MessageProcessingService {
      * Get existing network or create a new one.
      */
     private NetworkEntity getOrCreateNetwork(String networkName) {
-        return monitoringDao.findByName(networkName)
+        return monitoringDao.findNetworkByName(networkName)
                 .orElseGet(() -> {
                     NetworkEntity newNetwork = new NetworkEntity(networkName);
                     return monitoringDao.save(newNetwork);

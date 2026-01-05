@@ -42,7 +42,7 @@ public class MonitoringDAO {
      * @param name Network name to search for
      * @return Optional containing the network if found, empty otherwise
      */
-    public Optional<NetworkEntity> findByName(String name) {
+    public Optional<NetworkEntity> findNetworkByName(String name) {
         try {
             // JPQL (JPA Query Language) - similar to SQL but uses entity names
             // :name is a named parameter to prevent SQL injection
@@ -61,7 +61,7 @@ public class MonitoringDAO {
      * 
      * @return List of all networks ordered by name
      */
-    public List<NetworkEntity> findAll() {
+    public List<NetworkEntity> findAllNetworks() {
         return em.createQuery("SELECT n FROM NetworkEntity n ORDER BY n.id", NetworkEntity.class)
                 .getResultList();
     }
@@ -90,7 +90,7 @@ public class MonitoringDAO {
      * @param networkId The ID of the network
      * @return List of all devices for the given network ID
      */
-    public List<DeviceEntity> findAllForNetwork(long networkId) {
+    public List<DeviceEntity> findAllDevicesForNetwork(long networkId) {
         return em.createQuery("SELECT n FROM DeviceEntity n WHERE n.network.id = :networkId", DeviceEntity.class)
                 .setParameter("networkId", networkId)
                 .getResultList();
@@ -123,7 +123,7 @@ public class MonitoringDAO {
      * @param network The network to query
      * @return List of status records for currently online devices
      */
-    public List<DeviceStatusHistoryEntity> findCurrentlyOnline(NetworkEntity network) {
+    public List<DeviceStatusHistoryEntity> findCurrentlyOnlineDevices(NetworkEntity network) {
         return em.createQuery(
                 "SELECT d FROM DeviceStatusHistoryEntity d " +
                         "WHERE d.network = :network " +
@@ -137,7 +137,7 @@ public class MonitoringDAO {
                 .getResultList();
     }
 
-    public DeviceStatusHistoryEntity findLatestByDevice(NetworkEntity network, DeviceEntity device) {
+    public DeviceStatusHistoryEntity findLatestHistoryEntryByDevice(NetworkEntity network, DeviceEntity device) {
         List<DeviceStatusHistoryEntity> results = em.createQuery(
                 "SELECT d FROM DeviceStatusHistoryEntity d " +
                         "WHERE d.network = :network " +

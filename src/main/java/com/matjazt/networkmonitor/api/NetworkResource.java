@@ -63,7 +63,7 @@ public class NetworkResource {
             @APIResponse(responseCode = "200", description = "Successfully retrieved networks", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
     public Response getNetworks() {
-        List<NetworkEntity> networks = monitoringDao.findAll();
+        List<NetworkEntity> networks = monitoringDao.findAllNetworks();
 
         // Convert entities to DTOs (Data Transfer Objects)
         // We don't expose entities directly to avoid over-fetching and
@@ -99,7 +99,7 @@ public class NetworkResource {
     public Response getOnlineDevices(
             @Parameter(description = "Name of the network", required = true, example = "MaliGrdi") @PathParam("networkName") String networkName) {
         // Find the network
-        Optional<NetworkEntity> networkOpt = monitoringDao.findByName(networkName);
+        Optional<NetworkEntity> networkOpt = monitoringDao.findNetworkByName(networkName);
 
         if (networkOpt.isEmpty()) {
             // Return 404 Not Found if network doesn't exist
@@ -111,7 +111,7 @@ public class NetworkResource {
         NetworkEntity network = networkOpt.get();
 
         // Get currently online devices
-        List<DeviceStatusHistoryEntity> onlineDevices = monitoringDao.findCurrentlyOnline(network);
+        List<DeviceStatusHistoryEntity> onlineDevices = monitoringDao.findCurrentlyOnlineDevices(network);
 
         // Convert to DTOs
         List<Map<String, Object>> deviceDtos = onlineDevices.stream()

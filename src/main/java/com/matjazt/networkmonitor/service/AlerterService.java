@@ -313,7 +313,7 @@ public class AlerterService {
         LOGGER.trace("Running scheduled alert task...");
 
         // process networks one by one
-        for (NetworkEntity network : monitoringDao.findAll()) {
+        for (NetworkEntity network : monitoringDao.findAllNetworks()) {
             processNetworkAlerts(network);
         }
 
@@ -345,7 +345,7 @@ public class AlerterService {
         }
 
         // now check individual devices
-        for (DeviceEntity device : monitoringDao.findAllForNetwork(network.getId())) {
+        for (DeviceEntity device : monitoringDao.findAllDevicesForNetwork(network.getId())) {
 
             if (device.getDeviceOperationMode() == DeviceOperationMode.UNAUTHORIZED) {
                 // the device is not allowed on the network
@@ -372,7 +372,7 @@ public class AlerterService {
                 } else {
                     // device is up
                     if (device.getActiveAlertId() != null
-                            && monitoringDao.findLatestByDevice(network, device)
+                            && monitoringDao.findLatestHistoryEntryByDevice(network, device)
                                     .getTimestamp().isBefore(closureThreshold)) {
                         // device was down, now it's back up and has been up for long enough - send
                         // recovery alert

@@ -112,7 +112,7 @@ public class MqttService {
             // Subscribe to all configured topics
 
             // Obtain list of networks from database
-            var networks = monitoringDao.findAll();
+            var networks = monitoringDao.findAllNetworks();
             String topicTemplate = config.getMqttTopicTemplate();
             for (var network : networks) {
                 String topic = topicTemplate.replace("{networkName}", network.getName());
