@@ -214,6 +214,17 @@ Returns currently online devices for the specified network.
    - Records "offline" event
 6. Only state changes are stored
 
+### Network Scanners
+
+The application receives device data from network scanner scripts deployed on routers or dedicated devices. These scripts scan local networks and publish results to MQTT.
+
+**Available scanners:**
+
+- **RouterOS 7**: Script for MikroTik routers with ARP scanning and targeted ping verification
+  - See [network-scanners/RouterOS/](network-scanners/RouterOS/) for installation and configuration
+
+**Message format**: All scanners publish JSON messages with hostname, timestamp, and online device list (IP + MAC addresses).
+
 ### Device Operation Modes
 
 Devices can be configured with three operation modes:

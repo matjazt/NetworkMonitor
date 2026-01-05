@@ -21,6 +21,11 @@ NetworkMonitor2/
 │   └── mqtt-examples/               # MQTT message examples
 │       ├── README.md
 │       └── example-message.json
+├── network-scanners/                # Network scanner scripts for devices
+│   └── RouterOS/                    # MikroTik RouterOS scanner
+│       ├── networkScan.RouterOS.md  # Installation and configuration guide
+│       ├── networkScan.rsc          # RouterOS script
+│       └── networkScan.json         # Configuration template
 ├── src/
 │   ├── main/
 │   │   ├── java/                    # Java source code
@@ -86,6 +91,22 @@ Includes:
 ### database/NetworkMonitor.sql
 
 Development and maintenance queries. **DO NOT execute this file** - it contains DROP statements and test queries. Used during development for database operations.
+
+## Network Scanners Directory
+
+Contains scripts for network devices (routers, dedicated scanners) that scan local networks and publish device status to MQTT.
+
+### network-scanners/RouterOS/
+
+MikroTik RouterOS 7 network scanner script:
+
+- **networkScan.rsc**: RouterOS script that performs ARP scanning and targeted ping verification
+- **networkScan.json**: Configuration file template (IP ranges, pingable nodes, MQTT settings)
+- **networkScan.RouterOS.md**: Complete installation and configuration guide
+
+The script integrates with the backend by publishing JSON messages to MQTT topics matching the `mqtt.topic.template` pattern. Each scanner should be configured to publish to a unique topic corresponding to its network.
+
+**Future additions**: Scripts for OpenWRT, Linux, and other platforms can be added as subdirectories following the same pattern.
 
 ## Source Code Organization
 
