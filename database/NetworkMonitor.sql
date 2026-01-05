@@ -1,4 +1,5 @@
-ne vsega hkrati poganjat!!!!
+DO NOT RUN THIS FILE DIRECTLY!!!!
+DO NOT COMMENT THE LINE ABOVE!!!!
 
 drop table device_status_history ;
 drop table device ;
@@ -142,3 +143,8 @@ delete from alert where id > 0;
 delete from device_status_history where id > 0;
 update network set active_alert_id = null, last_seen = first_seen ;
 update device set active_alert_id = null, last_seen = first_seen ;
+
+-- manual cleanup of test devices
+delete from alert where device_id in (82,84,77, 78, 81);
+delete from device_status_history where device_id in (82,84,77, 78, 81);
+delete from device where id in (82,84,77, 78, 81);

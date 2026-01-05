@@ -21,7 +21,7 @@ Install these extensions for the best development experience:
 
 ## Highly Recommended
 
-3. **XML** (redhat.vscode-xml)
+1. **XML** (redhat.vscode-xml)
    - Publisher: Red Hat
    - Syntax highlighting and validation for:
      - pom.xml
@@ -29,52 +29,35 @@ Install these extensions for the best development experience:
      - beans.xml
      - web.xml
 
-4. **PostgreSQL** (ckolkman.vscode-postgres)
+2. **PostgreSQL** (ckolkman.vscode-postgres)
    - Publisher: Chris Kolkman
    - Database client for managing PostgreSQL
    - Run queries, view tables, inspect data
 
-5. **REST Client** (humao.rest-client)
+3. **REST Client** (humao.rest-client)
    - Publisher: Huachao Mao
    - Test REST APIs directly in VS Code
    - No need for Postman or curl
 
 ## Optional but Useful
 
-6. **SonarLint** (SonarSource.sonarlint-vscode)
+1. **SonarLint** (SonarSource.sonarlint-vscode)
    - Publisher: SonarSource
    - Code quality and security analysis
    - Detects bugs and code smells
 
-7. **GitLens** (eamodio.gitlens)
+2. **GitLens** (eamodio.gitlens)
    - Publisher: GitKraken
    - Enhanced Git integration
    - Blame annotations, history, etc.
 
-8. **Todo Tree** (Gruntfuggly.todo-tree)
+3. **Todo Tree** (Gruntfuggly.todo-tree)
    - Publisher: Gruntfuggly
    - Shows TODO/FIXME comments in tree view
 
-9. **Error Lens** (usernamehw.errorlens)
+4. **Error Lens** (usernamehw.errorlens)
    - Publisher: Alexander
    - Shows errors inline in code
-
-## Installation
-
-### Via Command Palette:
-1. Press `Ctrl+Shift+P`
-2. Type "Extensions: Install Extensions"
-3. Search for each extension by name
-4. Click Install
-
-### Via Command Line:
-```powershell
-code --install-extension vscjava.vscode-java-pack
-code --install-extension redhat.vscode-community-server-connector
-code --install-extension redhat.vscode-xml
-code --install-extension ckolkman.vscode-postgres
-code --install-extension humao.rest-client
-```
 
 ## Configuration
 
@@ -86,7 +69,7 @@ After installing, configure Java in VS Code:
 4. Search for "maven.executable.path"
 5. Set to your Maven bin directory if not in PATH
 
-### Recommended settings.json:
+### Recommended settings.json
 
 ```json
 {

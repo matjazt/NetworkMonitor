@@ -160,7 +160,7 @@ Returns currently online devices for the specified network.
 ### MQTT Message Processing
 
 1. Application starts and connects to MQTT broker
-2. Subscribes to configured topics (e.g., `network/MaliGrdi`)
+2. Subscribes to configured topics (based on network names in the database and topic pattern from configuration)
 3. Receives JSON messages with device lists
 4. For each device in the message (online devices):
    - Checks previous status in database
